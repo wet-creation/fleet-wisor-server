@@ -16,7 +16,7 @@ fun Application.configureDatabases(
     userRepository: UserRepository
 ) {
     val database = Database.connect(
-        url = "jdbc:h2:mem:fleetwisor;DB_CLOSE_DELAY=-1",
+        url = System.getenv("DB_URL"),
         user = "root",
         driver = "org.h2.Driver",
         password = "",

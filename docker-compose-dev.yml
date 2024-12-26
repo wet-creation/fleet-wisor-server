@@ -1,0 +1,14 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: DockerfileDev
+    volumes:
+      - .:/home/gradle/app:cached
+    working_dir: /home/gradle/app
+    env_file:
+      - .dev.env
+    ports:
+      - "8080:8080"
+    command: gradle -t run --no-daemon
+

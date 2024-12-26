@@ -1,4 +1,3 @@
-
 val exposed_version: String by project
 val h2_version: String by project
 val koin_version: String by project
@@ -14,7 +13,10 @@ plugins {
 
 }
 
-
+flyway {
+    url = System.getenv("DB_URL")
+    baselineOnMigrate = true
+}
 group = "ua.com"
 version = "0.0.1"
 
@@ -30,6 +32,8 @@ repositories {
 }
 
 dependencies {
+
+    testImplementation ("io.ktor:ktor-server-host-common")
     implementation("io.ktor:ktor-server-core-jvm")
     implementation("io.ktor:ktor-server-auth-jvm")
     implementation("io.ktor:ktor-server-host-common-jvm")
@@ -44,7 +48,6 @@ dependencies {
     implementation("io.insert-koin:koin-ktor:$koin_version")
     implementation("io.insert-koin:koin-logger-slf4j:$koin_version")
     implementation ("org.flywaydb:flyway-core:$flyway_version")
-    implementation("io.github.cdimascio:dotenv-kotlin:6.4.1")
     implementation("io.ktor:ktor-server-netty-jvm")
     implementation("ch.qos.logback:logback-classic:$logback_version")
     implementation("io.ktor:ktor-server-config-yaml-jvm")

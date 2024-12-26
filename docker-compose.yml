@@ -1,0 +1,13 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./src:/home/gradle/app/src
+      - ./build.gradle:/home/gradle/app/build.gradle
+      - ./gradle.properties:/home/gradle/app/gradle.properties
+      - ./gradle:/home/gradle/app/gradle
+    ports:
+      - "8080:8080"
+    command: gradle buildFatJar --continuous
