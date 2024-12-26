@@ -4,6 +4,8 @@ val koin_version: String by project
 val kotlin_version: String by project
 val logback_version: String by project
 val flyway_version: String by project
+val mysqlVersion: String by project
+
 
 plugins {
     kotlin("jvm") version "2.1.0"
@@ -13,10 +15,7 @@ plugins {
 
 }
 
-flyway {
-    url = System.getenv("DB_URL")
-    baselineOnMigrate = true
-}
+
 group = "ua.com"
 version = "0.0.1"
 
@@ -44,9 +43,12 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-core:$exposed_version")
     implementation("org.jetbrains.exposed:exposed-jdbc:$exposed_version")
     implementation("org.jetbrains.exposed:exposed-dao:$exposed_version")
+    implementation("mysql:mysql-connector-java:$mysqlVersion")
+    implementation("com.zaxxer:HikariCP:6.2.1")
     implementation("com.h2database:h2:$h2_version")
     implementation("io.insert-koin:koin-ktor:$koin_version")
     implementation("io.insert-koin:koin-logger-slf4j:$koin_version")
+    implementation("org.flywaydb:flyway-mysql:$flyway_version")
     implementation ("org.flywaydb:flyway-core:$flyway_version")
     implementation("io.ktor:ktor-server-netty-jvm")
     implementation("ch.qos.logback:logback-classic:$logback_version")

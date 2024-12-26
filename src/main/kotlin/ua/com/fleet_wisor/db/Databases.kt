@@ -5,9 +5,6 @@ import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import kotlinx.coroutines.Dispatchers
-import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import ua.com.fleet_wisor.models.user.User
 import ua.com.fleet_wisor.models.user.UserCreate
 import ua.com.fleet_wisor.models.user.UserRepository
@@ -15,19 +12,14 @@ import ua.com.fleet_wisor.models.user.UserRepository
 fun Application.configureDatabases(
     userRepository: UserRepository
 ) {
-    val database = Database.connect(
-        url = System.getenv("DB_URL"),
-        user = "root",
-        driver = "org.h2.Driver",
-        password = "",
-    )
+
     routing {
         post("/users") {
             val user = call.receive<UserCreate>()
             val id = userRepository.create(user)
             call.respond(HttpStatusCode.Created, id)
         }
-        
+
         get("/users/{id}") {
             val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
             val user = userRepository.findById(id)
@@ -37,14 +29,18 @@ fun Application.configureDatabases(
                 call.respond(HttpStatusCode.NotFound)
             }
         }
-        
+        get("/users") {
+            val user = userRepository.all()
+            call.respond(HttpStatusCode.OK, user)
+        }
+
         put("/users/{id}") {
             val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
             val user = call.receive<User>()
             userRepository.update(id, user)
             call.respond(HttpStatusCode.OK)
         }
-        
+
         delete("/users/{id}") {
             val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
             userRepository.delete(id)
@@ -53,6 +49,3 @@ fun Application.configureDatabases(
     }
 }
 
-
-suspend fun <T> suspendTransaction(block: Transaction.() -> T): T =
-    newSuspendedTransaction(Dispatchers.IO, statement = block)

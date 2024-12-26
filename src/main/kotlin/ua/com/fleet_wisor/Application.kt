@@ -1,6 +1,7 @@
 package ua.com.fleet_wisor
 
 import io.ktor.server.application.*
+import ua.com.fleet_wisor.db.DatabaseFactory
 import ua.com.fleet_wisor.db.configureDatabases
 import ua.com.fleet_wisor.db.user.UserRepositoryImpl
 import ua.com.fleet_wisor.di.configureFrameworks
@@ -13,7 +14,9 @@ fun main(args: Array<String>) {
 
 fun Application.module() {
     configureContentNegotiation()
-    configureDatabases(userRepository = UserRepositoryImpl())
     configureFrameworks()
+    DatabaseFactory.init()
+    configureDatabases(userRepository = UserRepositoryImpl())
+
     configureRouting()
 }
