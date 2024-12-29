@@ -1,14 +1,19 @@
 package ua.com.fleet_wisor.routes
 
 import io.ktor.server.application.*
-import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import ua.com.fleet_wisor.models.user.owner.OwnerRepository
 
-fun Application.configureRouting() {
-
+fun Application.configureRouting(
+    ownerRepository: OwnerRepository
+) {
     routing {
-        get("/") {
-            call.respondText("Hello ktor")
+        route("/api/v1") {
+
+            configureOwnerRouting(ownerRepository)
+
         }
+
     }
+
 }

@@ -3,11 +3,13 @@ package ua.com.fleet_wisor.db
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import kotlinx.coroutines.Dispatchers
-import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.transactions.transaction
+import ua.com.fleet_wisor.db.user.UserTable
+import ua.com.fleet_wisor.db.user.owner.OwnerTable
 
 object DatabaseFactory {
 
@@ -18,18 +20,19 @@ object DatabaseFactory {
     fun init() {
         println("Initializing DB...")
         println("DB_URL: $dbUrl")
-        println("DB_USER: $dbUser")
-        println("DB_PASSWORD: $dbPassword")
 
-        Database.connect(
+        val database = Database.connect(
             hikariConfig()
         )
-
-        val flyway = Flyway.configure()
-            .dataSource(dbUrl, dbUser, dbPassword)
-            .load()
-
-        flyway.migrate()
+        transaction(database) {
+            SchemaUtils.create(UserTable, OwnerTable)
+        }
+//        val flyway = Flyway.configure()
+//            .dataSource(dbUrl, dbUser, dbPassword)
+//            .baselineOnMigrate(true)
+//            .load()
+//
+//        flyway.migrate()
     }
 
     private fun hikariConfig(): HikariDataSource {
