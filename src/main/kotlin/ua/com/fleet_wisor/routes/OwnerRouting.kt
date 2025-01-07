@@ -16,29 +16,29 @@ fun Route.configureOwnerRouting(
     route("/owners") {
         post {
             val user = call.receive<OwnerCreate>()
-            val id = ownerRepository.create(user)
-            call.respond(HttpStatusCode.Created, id)
+            ownerRepository.create(user)
+            call.respond(HttpStatusCode.Created)
         }
 
         get("/{id}") {
             val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
             val user = ownerRepository.findById(id)
             if (user != null) {
-                call.respond(HttpStatusCode.OK, user.asOwnerRead())
+                call.respond(HttpStatusCode.OK, user)
             } else {
                 throw NotFoundException(notFoundMessage(Owner::class, id, "Check your id"))
             }
         }
         get {
             val user = ownerRepository.all()
-            call.respond(HttpStatusCode.OK, user.map { it.asOwnerRead() })
+            call.respond(HttpStatusCode.OK, user)
         }
 
         put {
             val user = call.receive<Owner>()
             val res = ownerRepository.update(user)
                 ?: throw NotFoundException(notFoundMessage(Owner::class, user.id, "Check your id"))
-            call.respond(HttpStatusCode.OK, res.asOwnerRead())
+            call.respond(HttpStatusCode.OK, res)
         }
 
         delete("/{id}") {

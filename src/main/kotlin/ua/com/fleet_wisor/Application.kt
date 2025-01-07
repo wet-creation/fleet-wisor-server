@@ -2,6 +2,7 @@ package ua.com.fleet_wisor
 
 import io.ktor.server.application.*
 import ua.com.fleet_wisor.db.DatabaseFactory
+import ua.com.fleet_wisor.db.user.driver.DriverRepositoryImpl
 import ua.com.fleet_wisor.db.user.owner.OwnerRepositoryImpl
 import ua.com.fleet_wisor.di.configureFrameworks
 import ua.com.fleet_wisor.plugins.configureContentNegotiation
@@ -19,5 +20,6 @@ fun Application.module() {
     configureStatusPages()
     configureRouting(
         ownerRepository = OwnerRepositoryImpl(),
+        driverRepository = DriverRepositoryImpl(),
     )
 }

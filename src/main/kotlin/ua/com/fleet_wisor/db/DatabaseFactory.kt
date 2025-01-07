@@ -9,6 +9,7 @@ import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.transactions.transaction
 import ua.com.fleet_wisor.db.user.UserTable
+import ua.com.fleet_wisor.db.user.driver.DriverTable
 import ua.com.fleet_wisor.db.user.owner.OwnerTable
 
 object DatabaseFactory {
@@ -25,7 +26,7 @@ object DatabaseFactory {
             hikariConfig()
         )
         transaction(database) {
-            SchemaUtils.create(UserTable, OwnerTable)
+            SchemaUtils.create(UserTable, OwnerTable, DriverTable)
         }
 //        val flyway = Flyway.configure()
 //            .dataSource(dbUrl, dbUser, dbPassword)

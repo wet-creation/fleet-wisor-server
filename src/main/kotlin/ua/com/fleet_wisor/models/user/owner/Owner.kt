@@ -8,17 +8,6 @@ data class Owner(
     val name: String,
     val surname: String,
     val email: String,
-    val password: String
-) {
-    fun asOwnerRead() = OwnerRead(id = id, name = name, surname = surname, email = email)
-}
-
-@Serializable
-data class OwnerRead(
-    val id: Int,
-    val name: String,
-    val surname: String,
-    val email: String,
 )
 
 
