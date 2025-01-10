@@ -3,14 +3,15 @@ package ua.com.fleet_wisor.db.user.owner
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.dao.id.IntIdTable
+import org.jetbrains.exposed.dao.id.IdTable
+import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.ReferenceOption
 import ua.com.fleet_wisor.db.user.UserDao
 import ua.com.fleet_wisor.db.user.UserTable
 import ua.com.fleet_wisor.models.user.owner.Owner
 
-object OwnerTable : IntIdTable("owner") {
-    val userId = reference(
+object OwnerTable : IdTable<Int>("owner") {
+    override val id: Column<EntityID<Int>> = reference(
         "userId",
         UserTable.id,
         onDelete = ReferenceOption.CASCADE,
@@ -24,15 +25,18 @@ object OwnerTable : IntIdTable("owner") {
 class OwnerDao(id: EntityID<Int>) : IntEntity(id) {
     companion object : IntEntityClass<OwnerDao>(OwnerTable)
 
-    var user by UserDao referencedOn OwnerTable.userId
+    var user by UserDao referencedOn OwnerTable.id
     var name by OwnerTable.name
     var surname by OwnerTable.surname
 }
 
 
-fun OwnerDao.toModel() = Owner(
-    id = user.id.value,
-    email = user.email,
-    name = name,
-    surname = surname
-)
+fun OwnerDao.toModel(): Owner {
+    println("User ID: ${user.id.value}, Email: ${user.email}, Name: $name, Surname: $surname")
+    return Owner(
+        id = user.id.value,
+        email = user.email,
+        name = name,
+        surname = surname
+    )
+}

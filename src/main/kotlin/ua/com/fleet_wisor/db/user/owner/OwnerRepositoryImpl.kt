@@ -20,11 +20,11 @@ class OwnerRepositoryImpl : OwnerRepository {
     }
 
     override suspend fun findById(id: Int): Owner? = suspendTransaction {
-        OwnerDao.find { OwnerTable.userId eq id }.firstOrNull()?.toModel()
+        OwnerDao.findById(id)?.toModel()
     }
 
     override suspend fun update(owner: Owner): Owner? = suspendTransaction {
-        OwnerDao.findSingleByAndUpdate(OwnerTable.userId eq owner.id) {
+        OwnerDao.findSingleByAndUpdate(OwnerTable.id eq owner.id) {
             it.name = owner.name
             it.surname = owner.surname
         }?.toModel()

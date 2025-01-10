@@ -2,6 +2,7 @@ package ua.com.fleet_wisor
 
 import io.ktor.server.application.*
 import ua.com.fleet_wisor.db.DatabaseFactory
+import ua.com.fleet_wisor.db.car.CarRepositoryImpl
 import ua.com.fleet_wisor.db.user.driver.DriverRepositoryImpl
 import ua.com.fleet_wisor.db.user.owner.OwnerRepositoryImpl
 import ua.com.fleet_wisor.di.configureFrameworks
@@ -21,5 +22,6 @@ fun Application.module() {
     configureRouting(
         ownerRepository = OwnerRepositoryImpl(),
         driverRepository = DriverRepositoryImpl(),
+        carRepository = CarRepositoryImpl(),
     )
 }
