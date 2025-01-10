@@ -32,7 +32,6 @@ class OwnerDao(id: EntityID<Int>) : IntEntity(id) {
 
 
 fun OwnerDao.toModel(): Owner {
-    println("User ID: ${user.id.value}, Email: ${user.email}, Name: $name, Surname: $surname")
     return Owner(
         id = user.id.value,
         email = user.email,

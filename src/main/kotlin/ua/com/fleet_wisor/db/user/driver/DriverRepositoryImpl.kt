@@ -20,7 +20,7 @@ class DriverRepositoryImpl: DriverRepository {
     }
 
     override suspend fun findById(id: Int): Driver? = suspendTransaction {
-        DriverDao.find { DriverTable.userId eq id }.firstOrNull()?.toModel()
+        DriverDao.findById(id)?.toModel()
 
     }
 

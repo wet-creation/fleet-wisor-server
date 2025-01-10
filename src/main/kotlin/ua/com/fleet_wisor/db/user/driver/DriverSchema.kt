@@ -3,15 +3,16 @@ package ua.com.fleet_wisor.db.user.driver
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.dao.id.IntIdTable
+import org.jetbrains.exposed.dao.id.IdTable
+import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.ReferenceOption
 import ua.com.fleet_wisor.db.user.UserDao
 import ua.com.fleet_wisor.db.user.UserTable
 import ua.com.fleet_wisor.models.user.driver.Driver
 
 
-object DriverTable : IntIdTable("driver") {
-    val userId = reference(
+object DriverTable : IdTable<Int>("driver") {
+    override val id: Column<EntityID<Int>> = DriverTable.reference(
         "userId",
         UserTable.id,
         onDelete = ReferenceOption.CASCADE,
@@ -29,7 +30,7 @@ object DriverTable : IntIdTable("driver") {
 class DriverDao(id: EntityID<Int>) : IntEntity(id) {
     companion object : IntEntityClass<DriverDao>(DriverTable)
 
-    var user by UserDao referencedOn DriverTable.userId
+    var user by UserDao referencedOn DriverTable.id
     var name by DriverTable.name
     var surname by DriverTable.surname
     var phone by DriverTable.phone
