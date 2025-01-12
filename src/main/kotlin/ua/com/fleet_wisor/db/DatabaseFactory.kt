@@ -13,6 +13,7 @@ import ua.com.fleet_wisor.db.car.CarTable
 import ua.com.fleet_wisor.db.car.FuelTypeTable
 import ua.com.fleet_wisor.db.user.UserTable
 import ua.com.fleet_wisor.db.user.driver.DriverTable
+import ua.com.fleet_wisor.db.user.driver.DriverWithCarTable
 import ua.com.fleet_wisor.db.user.owner.OwnerTable
 
 object DatabaseFactory {
@@ -29,7 +30,15 @@ object DatabaseFactory {
             hikariConfig()
         )
         transaction(database) {
-            SchemaUtils.create(UserTable, OwnerTable, DriverTable, CarBodyTable, FuelTypeTable, CarTable)
+            SchemaUtils.create(
+                UserTable,
+                OwnerTable,
+                DriverTable,
+                CarBodyTable,
+                FuelTypeTable,
+                CarTable,
+                DriverWithCarTable
+            )
         }
 //        val flyway = Flyway.configure()
 //            .dataSource(dbUrl, dbUser, dbPassword)

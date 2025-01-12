@@ -8,14 +8,11 @@ import ua.com.fleet_wisor.models.user.driver.CarRepository
 
 class CarRepositoryImpl : CarRepository {
     override suspend fun all(): List<Car> = suspendTransaction {
-        println("hello")
         CarDao.all().map {
             try {
                 val car = it.toModel()
-                println("Car mapped successfully: $car")
                 car
             } catch (e: Exception) {
-                println("Error mapping car with ID ${it.id.value}: ${e.message}")
                 throw e
             }
         }
