@@ -1,7 +1,7 @@
 package ua.com.fleet_wisor.models.car
 
 import kotlinx.serialization.Serializable
-import ua.com.fleet_wisor.models.user.owner.Owner
+import ua.com.fleet_wisor.models.user.Owner
 
 @Serializable
 data class CarBody(val id: Int, val name: String)

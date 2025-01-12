@@ -5,9 +5,7 @@ import io.ktor.server.plugins.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import ua.com.fleet_wisor.models.user.owner.Owner
-import ua.com.fleet_wisor.models.user.owner.OwnerCreate
-import ua.com.fleet_wisor.models.user.owner.OwnerRepository
+import ua.com.fleet_wisor.models.user.*
 import ua.com.fleet_wisor.utils.notFoundMessage
 
 fun Route.configureOwnerRouting(
@@ -37,7 +35,7 @@ fun Route.configureOwnerRouting(
         put {
             val user = call.receive<Owner>()
             val res = ownerRepository.update(user)
-                ?: throw NotFoundException(notFoundMessage(Owner::class, user.id, "Check your id"))
+                ?: throw NotFoundException(notFoundMessage(User::class, user.id, "Check your id"))
             call.respond(HttpStatusCode.OK, res)
         }
 

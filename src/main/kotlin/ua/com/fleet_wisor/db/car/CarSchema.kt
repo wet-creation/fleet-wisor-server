@@ -1,101 +1,82 @@
 package ua.com.fleet_wisor.db.car
 
-import org.jetbrains.exposed.dao.IntEntity
-import org.jetbrains.exposed.dao.IntEntityClass
-import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.dao.id.IntIdTable
-import org.jetbrains.exposed.sql.ReferenceOption
-import ua.com.fleet_wisor.db.user.owner.OwnerDao
-import ua.com.fleet_wisor.db.user.owner.OwnerTable
-import ua.com.fleet_wisor.db.user.owner.toModel
+import org.ktorm.dsl.QueryRowSet
+import org.ktorm.schema.Table
+import org.ktorm.schema.int
+import org.ktorm.schema.varchar
+import ua.com.fleet_wisor.db.user.toUser
 import ua.com.fleet_wisor.models.car.Car
 import ua.com.fleet_wisor.models.car.CarBody
 import ua.com.fleet_wisor.models.car.FuelType
+import ua.com.fleet_wisor.models.user.Owner
 
 
-object CarBodyTable : IntIdTable("car_body") {
-    val name = varchar("name", 255)
+object CarBodyTable : Table<Nothing>("car_body") {
+    val id = int("id").primaryKey()
+    var name = varchar("name")
 }
 
-class CarBodyDao(id: EntityID<Int>) : IntEntity(id) {
-    companion object : IntEntityClass<CarBodyDao>(CarBodyTable)
-
-    var name by CarBodyTable.name
-}
-
-fun CarBodyDao.toModel(): CarBody = CarBody(id.value, name)
-
-object FuelTypeTable : IntIdTable("fuel_type") {
-    val name = varchar("name", 255)
-}
-
-class FuelTypeDao(id: EntityID<Int>) : IntEntity(id) {
-    companion object : IntEntityClass<FuelTypeDao>(FuelTypeTable)
-
-    var name by FuelTypeTable.name
-}
-
-fun FuelTypeDao.toModel(): FuelType = FuelType(id.value, name)
-
-
-object CarTable : IntIdTable("car") {
-    val name = varchar("name", 255)
-    val brandName = varchar("brandName", 255)
-    val color = varchar("color", 50).nullable()
-    val vin = varchar("vin", 18).nullable()
-    val model = varchar("model", 255).nullable()
-    val licensePlate = varchar("licensePlate", 50).nullable()
-    val mileAge = integer("mileAge").default(0)
-    val ownerId = reference(
-        "ownerId",
-        OwnerTable.id,
-        onDelete = ReferenceOption.CASCADE,
-        onUpdate = ReferenceOption.CASCADE
-    ).uniqueIndex()
-    val carBodyId = reference(
-        "carBodyId",
-        CarBodyTable.id,
-        onDelete = ReferenceOption.CASCADE,
-        onUpdate = ReferenceOption.CASCADE
-    ).uniqueIndex()
-    val fuelTypeId = reference(
-        "fuelTypeId",
-        FuelTypeTable.id,
-        onDelete = ReferenceOption.CASCADE,
-        onUpdate = ReferenceOption.CASCADE
-    ).uniqueIndex()
-}
-
-
-class CarDao(id: EntityID<Int>) : IntEntity(id) {
-    companion object : IntEntityClass<CarDao>(CarTable)
-
-    var name by CarTable.name
-    var brandName by CarTable.brandName
-    var color by CarTable.color
-    var vin by CarTable.vin
-    var model by CarTable.model
-    var licensePlate by CarTable.licensePlate
-    var mileAge by CarTable.mileAge
-    var owner by OwnerDao referencedOn CarTable.ownerId
-    var carBody by CarBodyDao referencedOn CarTable.carBodyId
-    var fuelType by FuelTypeDao referencedOn CarTable.fuelTypeId
-}
-
-fun CarDao.toModel(): Car =
-    Car(
-        id = id.value,
-        name = name,
-        brandName = brandName,
-        color = color,
-        vin = vin,
-        model = model,
-        licensePlate = licensePlate,
-        mileAge = mileAge,
-        fuelType = fuelType.toModel(),
-        carBody = carBody.toModel(),
-        owner = owner.toModel()
+fun QueryRowSet.toCarBody(): CarBody {
+    val t = this
+    return CarBody(
+        id = t[CarTable.id]!!,
+        name = t[CarTable.name]!!,
     )
+}
+
+
+object FuelTypeTable : Table<Nothing>("fuel_type") {
+    val id = int("id").primaryKey()
+    var name = varchar("name")
+}
+
+fun QueryRowSet.toFuelType(): FuelType {
+    val t = this
+    return FuelType(
+        id = t[FuelTypeTable.id]!!,
+        name = t[FuelTypeTable.name]!!,
+    )
+}
+
+
+object CarTable : Table<Nothing>("car") {
+    val id = int("id").primaryKey()
+    var name = varchar("name")
+    var brandName = varchar("brandName")
+    var color = varchar("color")
+    var vin = varchar("vin")
+    var model = varchar("model")
+    var licensePlate = varchar("licensePlate")
+    var mileAge = int("mileAge")
+    var ownerId = int("ownerId")
+    var carBodyId = int("carBodyId")
+    var fuelTypeId = int("fuelTypeId")
+}
+
+fun QueryRowSet.toCar(): Car {
+    val t = this
+    val user = toUser()
+    return Car(
+        id = t[CarTable.id]!!,
+        name = t[CarTable.name]!!,
+        brandName = t[CarTable.brandName]!!,
+        color = t[CarTable.color],
+        vin = t[CarTable.vin],
+        model = t[CarTable.model],
+        licensePlate = t[CarTable.licensePlate],
+        mileAge = t[CarTable.mileAge]!!,
+        owner = Owner(
+            email = user.email,
+            name = user.name,
+            surname = user.surname,
+            id = user.id,
+        ),
+        fuelType = toFuelType(),
+        carBody = toCarBody(),
+    )
+}
+
+
 
 
 

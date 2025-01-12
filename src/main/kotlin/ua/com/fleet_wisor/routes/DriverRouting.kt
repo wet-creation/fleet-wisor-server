@@ -5,9 +5,9 @@ import io.ktor.server.plugins.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import ua.com.fleet_wisor.models.user.driver.Driver
 import ua.com.fleet_wisor.models.user.driver.DriverCreate
 import ua.com.fleet_wisor.models.user.driver.DriverRepository
-import ua.com.fleet_wisor.models.user.owner.Owner
 import ua.com.fleet_wisor.utils.notFoundMessage
 
 fun Route.configureDriverRouting(
@@ -26,7 +26,7 @@ fun Route.configureDriverRouting(
             if (user != null) {
                 call.respond(HttpStatusCode.OK, user)
             } else {
-                throw NotFoundException(notFoundMessage(Owner::class, id, "Check your id"))
+                throw NotFoundException(notFoundMessage(Driver::class, id, "Check your id"))
             }
         }
         get {

@@ -1,49 +1,33 @@
 package ua.com.fleet_wisor.db.user.driver
 
-import org.jetbrains.exposed.dao.IntEntity
-import org.jetbrains.exposed.dao.IntEntityClass
-import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.dao.id.IdTable
-import org.jetbrains.exposed.sql.Column
-import org.jetbrains.exposed.sql.ReferenceOption
-import ua.com.fleet_wisor.db.user.UserDao
+import org.ktorm.dsl.QueryRowSet
+import org.ktorm.schema.Table
+import org.ktorm.schema.int
+import org.ktorm.schema.varchar
 import ua.com.fleet_wisor.db.user.UserTable
 import ua.com.fleet_wisor.models.user.driver.Driver
 
 
-object DriverTable : IdTable<Int>("driver") {
-    override val id: Column<EntityID<Int>> = DriverTable.reference(
-        "userId",
-        UserTable.id,
-        onDelete = ReferenceOption.CASCADE,
-        onUpdate = ReferenceOption.CASCADE
-    ).uniqueIndex()
-    val name = varchar("name", 255)
-    val surname = varchar("surname", 255)
-
-    val phone = varchar("phone", 255)
-    val driverLicenseNumber = varchar("driverLicenseNumber", 255)
-    val uniqueCode = integer("uniqueCode")
+object DriverTable : Table<Nothing>("driver") {
+    val userId = int("userId").primaryKey()
+    var phone = varchar("phone")
+    var driverLicenseNumber = varchar("driverLicenseNumber")
+    var uniqueCode = int("uniqueCode")
 
 }
 
-class DriverDao(id: EntityID<Int>) : IntEntity(id) {
-    companion object : IntEntityClass<DriverDao>(DriverTable)
-
-    var user by UserDao referencedOn DriverTable.id
-    var name by DriverTable.name
-    var surname by DriverTable.surname
-    var phone by DriverTable.phone
-    var driverLicenseNumber by DriverTable.driverLicenseNumber
-    var uniqueCode by DriverTable.uniqueCode
+fun QueryRowSet.toDriver(): Driver {
+    val t = this
+    return Driver(
+        email = t[UserTable.email]!!,
+        id = t[UserTable.id]!!,
+        name = t[UserTable.name]!!,
+        surname = t[UserTable.surname]!!,
+        phone = t[DriverTable.phone]!!,
+        driverLicenseNumber = t[DriverTable.driverLicenseNumber]!!,
+        uniqueCode = t[DriverTable.uniqueCode]!!,
+    )
 }
 
 
-fun DriverDao.toModel() = Driver(
-    id = user.id.value,
-    email = user.email,
-    name = name,
-    surname = surname, phone = phone,
-    driverLicenseNumber = driverLicenseNumber,
-    uniqueCode = uniqueCode
-)
+

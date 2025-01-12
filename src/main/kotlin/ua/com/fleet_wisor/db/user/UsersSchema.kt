@@ -1,36 +1,33 @@
 package ua.com.fleet_wisor.db.user
 
-import org.jetbrains.exposed.dao.IntEntity
-import org.jetbrains.exposed.dao.IntEntityClass
-import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.dao.id.IntIdTable
+import org.ktorm.dsl.QueryRowSet
+import org.ktorm.schema.Table
+import org.ktorm.schema.enum
+import org.ktorm.schema.int
+import org.ktorm.schema.varchar
 import ua.com.fleet_wisor.models.user.Role
 import ua.com.fleet_wisor.models.user.User
 
 
-object UserTable : IntIdTable("user") {
-    val email = varchar("email", 255).uniqueIndex()
-    val password = varchar("password", 255)
-    val role = customEnumeration(
-        "role",
-        "ENUM('OWNER', 'DRIVER')",
-        { value -> Role.valueOf(value as String) },
-        { it.name })
-
+object UserTable : Table<Nothing>("user") {
+    val id = int("id").primaryKey()
+    var email = varchar("email")
+    var name = varchar("name")
+    var surname = varchar("surname")
+    var password = varchar("password")
+    var role = enum<Role>("role")
 }
 
-class UserDao(id: EntityID<Int>) : IntEntity(id) {
-    companion object : IntEntityClass<UserDao>(UserTable)
-    var email by UserTable.email
-    var password by UserTable.password
-    var role by UserTable.role
+fun QueryRowSet.toUser(): User {
+    val t = this
+    return User(
+        email = t[UserTable.email]!!,
+        id = t[UserTable.id]!!,
+        password = t[UserTable.password]!!,
+        role = t[UserTable.role]!!,
+        name = t[UserTable.name]!!,
+        surname = t[UserTable.surname]!!,
+    )
 }
 
-
-fun UserDao.toModel() = User(
-    id = id.value,
-    email = email,
-    password = password,
-    role = Role.valueOf(role.name),
-)
 
