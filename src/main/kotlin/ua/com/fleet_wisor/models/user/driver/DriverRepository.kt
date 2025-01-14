@@ -8,4 +8,6 @@ interface DriverRepository {
     suspend fun update(driver: Driver): Driver?
     suspend fun delete(id: Int): Boolean
     suspend fun create(driver: DriverCreate)
+
+    suspend fun assignCar(driverWithCarCreate: DriverWithCarCreate)
 }

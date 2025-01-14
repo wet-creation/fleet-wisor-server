@@ -7,6 +7,8 @@ import ua.com.fleet_wisor.models.user.Role
 import ua.com.fleet_wisor.models.user.driver.Driver
 import ua.com.fleet_wisor.models.user.driver.DriverCreate
 import ua.com.fleet_wisor.models.user.driver.DriverRepository
+import ua.com.fleet_wisor.models.user.driver.DriverWithCarCreate
+import java.time.Instant
 
 class DriverRepositoryImpl : DriverRepository {
     override suspend fun findByEmail(email: String): Driver? {
@@ -62,6 +64,20 @@ class DriverRepositoryImpl : DriverRepository {
                 set(it.uniqueCode, driver.uniqueCode)
                 set(it.driverLicenseNumber, driver.driverLicenseNumber)
             }
+        }
+    }
+
+    override suspend fun assignCar(driverWithCarCreate: DriverWithCarCreate) {
+        assignCarToDriver(driverWithCarCreate)
+    }
+}
+
+fun assignCarToDriver(driverWithCarCreate: DriverWithCarCreate) {
+    transactionalQuery { database ->
+        database.insert(DriverWithCarTable) {
+            set(DriverWithCarTable.carId, driverWithCarCreate.carId)
+            set(DriverWithCarTable.driverId, driverWithCarCreate.driverId)
+            set(DriverWithCarTable.timestampStart, Instant.now().epochSecond)
         }
     }
 }

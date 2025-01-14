@@ -7,8 +7,10 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import ua.com.fleet_wisor.models.car.Car
 import ua.com.fleet_wisor.models.car.CarCreate
+import ua.com.fleet_wisor.models.car.CarFillUpCreate
 import ua.com.fleet_wisor.models.user.Owner
-import ua.com.fleet_wisor.models.user.driver.CarRepository
+import ua.com.fleet_wisor.models.car.CarRepository
+import ua.com.fleet_wisor.models.user.driver.DriverWithCarCreate
 import ua.com.fleet_wisor.utils.notFoundMessage
 
 fun Route.configureCarRouting(
@@ -17,7 +19,6 @@ fun Route.configureCarRouting(
     route("/cars") {
         post {
             val car = call.receive<CarCreate>()
-            println(car)
             carRepository.create(car)
             call.respond(HttpStatusCode.Created)
         }
@@ -38,6 +39,27 @@ fun Route.configureCarRouting(
 
         put {
 
+        }
+        route("/fill-up") {
+            get {
+                val carFillUp = carRepository.allFillUps()
+                call.respond(HttpStatusCode.OK, carFillUp)
+            }
+
+            post {
+                val carFillUp = call.receive<CarFillUpCreate>()
+                carRepository.fillUpCar(carFillUp)
+                call.respond(HttpStatusCode.Created)
+            }
+
+
+        }
+        route("/driver") {
+            post {
+                val driverWithCarCreate = call.receive<DriverWithCarCreate>()
+                carRepository.assignDriver(driverWithCarCreate)
+                call.respond(HttpStatusCode.Created)
+            }
         }
 
         delete("/{id}") {
