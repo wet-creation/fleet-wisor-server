@@ -8,8 +8,8 @@ import io.ktor.server.routing.*
 import ua.com.fleet_wisor.models.car.Car
 import ua.com.fleet_wisor.models.car.CarCreate
 import ua.com.fleet_wisor.models.car.CarFillUpCreate
-import ua.com.fleet_wisor.models.user.Owner
 import ua.com.fleet_wisor.models.car.CarRepository
+import ua.com.fleet_wisor.models.user.User
 import ua.com.fleet_wisor.models.user.driver.DriverWithCarCreate
 import ua.com.fleet_wisor.utils.notFoundMessage
 
@@ -22,6 +22,8 @@ fun Route.configureCarRouting(
             carRepository.create(car)
             call.respond(HttpStatusCode.Created)
         }
+
+
 
         get("/{id}") {
             val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
@@ -66,7 +68,7 @@ fun Route.configureCarRouting(
             val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
             if (carRepository.delete(id))
                 call.respond(HttpStatusCode.OK)
-            else throw NotFoundException(notFoundMessage(Owner::class, id, "Check your id"))
+            else throw NotFoundException(notFoundMessage(User::class, id, "Check your id"))
         }
     }
 }

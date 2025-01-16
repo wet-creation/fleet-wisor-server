@@ -8,7 +8,7 @@ import ua.com.fleet_wisor.db.user.toUser
 import ua.com.fleet_wisor.models.car.Car
 import ua.com.fleet_wisor.models.car.CarBody
 import ua.com.fleet_wisor.models.car.FuelType
-import ua.com.fleet_wisor.models.user.Owner
+import ua.com.fleet_wisor.models.user.User
 
 
 object CarBodyTable : Table<Nothing>("car_body") {
@@ -55,7 +55,6 @@ object CarTable : Table<Nothing>("car") {
 
 fun QueryRowSet.toCar(): Car {
     val t = this
-    val user = toUser()
     return Car(
         id = t[CarTable.id]!!,
         name = t[CarTable.name]!!,
@@ -65,12 +64,7 @@ fun QueryRowSet.toCar(): Car {
         model = t[CarTable.model],
         licensePlate = t[CarTable.licensePlate],
         mileAge = t[CarTable.mileAge]!!,
-        owner = Owner(
-            email = user.email,
-            name = user.name,
-            surname = user.surname,
-            id = user.id,
-        ),
+        owner = toUser(),
         fuelType = toFuelType(),
         carBody = toCarBody(),
     )

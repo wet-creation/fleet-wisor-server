@@ -9,41 +9,41 @@ import ua.com.fleet_wisor.models.user.*
 import ua.com.fleet_wisor.utils.notFoundMessage
 
 fun Route.configureOwnerRouting(
-    ownerRepository: OwnerRepository
+    userRepository: UserRepository
 ) {
     route("/owners") {
         post {
-            val user = call.receive<OwnerCreate>()
-            ownerRepository.create(user)
+            val user = call.receive<UserCreate>()
+            userRepository.create(user)
             call.respond(HttpStatusCode.Created)
         }
 
         get("/{id}") {
             val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
-            val user = ownerRepository.findById(id)
+            val user = userRepository.findById(id)
             if (user != null) {
                 call.respond(HttpStatusCode.OK, user)
             } else {
-                throw NotFoundException(notFoundMessage(Owner::class, id, "Check your id"))
+                throw NotFoundException(notFoundMessage(User::class, id, "Check your id"))
             }
         }
         get {
-            val user = ownerRepository.all()
+            val user = userRepository.all()
             call.respond(HttpStatusCode.OK, user)
         }
 
         put {
-            val user = call.receive<Owner>()
-            val res = ownerRepository.update(user)
+            val user = call.receive<User>()
+            val res = userRepository.update(user)
                 ?: throw NotFoundException(notFoundMessage(User::class, user.id, "Check your id"))
             call.respond(HttpStatusCode.OK, res)
         }
 
         delete("/{id}") {
             val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
-            if (ownerRepository.delete(id))
+            if (userRepository.delete(id))
                 call.respond(HttpStatusCode.OK)
-            else throw NotFoundException(notFoundMessage(Owner::class, id, "Check your id"))
+            else throw NotFoundException(notFoundMessage(User::class, id, "Check your id"))
         }
     }
 }

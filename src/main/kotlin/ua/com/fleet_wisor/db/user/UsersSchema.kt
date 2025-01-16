@@ -1,10 +1,7 @@
 package ua.com.fleet_wisor.db.user
 
 import org.ktorm.dsl.QueryRowSet
-import org.ktorm.schema.Table
-import org.ktorm.schema.enum
-import org.ktorm.schema.int
-import org.ktorm.schema.varchar
+import org.ktorm.schema.*
 import ua.com.fleet_wisor.models.user.Role
 import ua.com.fleet_wisor.models.user.User
 
@@ -17,6 +14,14 @@ object UserTable : Table<Nothing>("user") {
     var password = varchar("password")
     var role = enum<Role>("role")
 }
+
+object TokenTable : Table<Nothing>("token") {
+    val userId = int("user_id")
+    val refresh = varchar("refresh")
+    val modifiedAt = long("modifiedAt")
+    val expiredAt = long("expiredAt")
+}
+
 
 fun QueryRowSet.toUser(): User {
     val t = this
