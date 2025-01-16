@@ -8,6 +8,7 @@ import io.ktor.server.routing.*
 import ua.com.fleet_wisor.models.user.driver.Driver
 import ua.com.fleet_wisor.models.user.driver.DriverCreate
 import ua.com.fleet_wisor.models.user.driver.DriverRepository
+import ua.com.fleet_wisor.models.user.hashPassword
 import ua.com.fleet_wisor.utils.notFoundMessage
 
 fun Route.configureDriverRouting(
@@ -16,7 +17,17 @@ fun Route.configureDriverRouting(
     route("/drivers") {
         post {
             val user = call.receive<DriverCreate>()
-            driverRepository.create(user)
+            val hashPassword = hashPassword(user.password)
+            val userWithHashPassword = DriverCreate(
+                email = user.email,
+                password = hashPassword,
+                name = user.name,
+                surname = user.surname,
+                phone = user.phone,
+                driverLicenseNumber = user.driverLicenseNumber,
+                uniqueCode = user.uniqueCode,
+            )
+            driverRepository.create(userWithHashPassword)
             call.respond(HttpStatusCode.Created)
         }
 

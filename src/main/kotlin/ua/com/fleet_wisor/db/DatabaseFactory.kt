@@ -4,12 +4,12 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import org.flywaydb.core.Flyway
 import org.ktorm.database.Database
+import ua.com.fleet_wisor.utils.getConfig
 
 object DatabaseFactory {
-    private val appConfig = System.getenv()
-    private val dbUrl = appConfig["DB_URL"]
-    private val dbUser = appConfig["DB_USER"]
-    private val dbPassword = appConfig["DB_PASSWORD"]
+    private val dbUrl = getConfig("DB_URL")
+    private val dbUser = getConfig("DB_USER")
+    private val dbPassword = getConfig("DB_PASSWORD")
     lateinit var database: Database
 
     fun init() {

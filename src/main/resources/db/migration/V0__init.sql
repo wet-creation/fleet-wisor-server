@@ -101,13 +101,13 @@ CREATE TABLE IF NOT EXISTS `car_fill_up`
     COLLATE = utf8mb4_0900_ai_ci;
 
 INSERT INTO `user` (`id`, `email`, `password`, `name`, `surname`, `role`)
-VALUES (1, 'owner1@example.com', 'securepassword1', 'John', 'Doe', 'OWNER'),
-       (2, 'driver1@example.com', 'securepassword2', 'Jane', 'Smith', 'DRIVER'),
-       (3, 'owner2@example.com', 'securepassword3', 'Alice', 'Brown', 'OWNER'),
-       (4, 'driver2@example.com', 'securepassword4', 'Bob', 'Johnson', 'DRIVER'),
-       (5, 'owner3@example.com', 'securepassword5', 'Charlie', 'Williams', 'OWNER');
-
-
+VALUES (1, 'owner1@example.com', '$2a$12$pD7gtqjFc0oSfwUCOlTkMuB7yhPzDaDpiC0dfnLWSgJCL1JmrPWWG', 'John', 'Doe', 'OWNER'),
+       (2, 'driver1@example.com', '$2a$12$pD7gtqjFc0oSfwUCOlTkMuB7yhPzDaDpiC0dfnLWSgJCL1JmrPWWG', 'Jane', 'Smith', 'DRIVER'),
+       (3, 'owner2@example.com', '$2a$12$pD7gtqjFc0oSfwUCOlTkMuB7yhPzDaDpiC0dfnLWSgJCL1JmrPWWG', 'Alice', 'Brown', 'OWNER'),
+       (4, 'driver2@example.com', '$2a$12$pD7gtqjFc0oSfwUCOlTkMuB7yhPzDaDpiC0dfnLWSgJCL1JmrPWWG', 'Bob', 'Johnson', 'DRIVER'),
+       (5, 'owner3@example.com', '$2a$12$pD7gtqjFc0oSfwUCOlTkMuB7yhPzDaDpiC0dfnLWSgJCL1JmrPWWG', 'Charlie', 'Williams', 'OWNER'),
+       (6, 'mishao@mail.com', '$2a$12$pD7gtqjFc0oSfwUCOlTkMuB7yhPzDaDpiC0dfnLWSgJCL1JmrPWWG', 'Misha', 'Nedobitkin', 'OWNER'),
+       (7, 'mishad@mail.com', '$2a$12$pD7gtqjFc0oSfwUCOlTkMuB7yhPzDaDpiC0dfnLWSgJCL1JmrPWWG', 'Misha', 'Nedobitkin', 'DRIVER');
 
 
 -- Таблица driver

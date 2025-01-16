@@ -20,6 +20,7 @@ fun Application.configureRouting(
             configureDriverRouting(driverRepository)
             configureCarRouting(carRepository)
             configureTripRouting(tripRepository)
+            configureAuthRouting(userRepository)
         }
 
     }

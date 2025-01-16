@@ -1,11 +1,15 @@
 package ua.com.fleet_wisor.routes
 
 import io.ktor.http.*
+import io.ktor.server.auth.*
 import io.ktor.server.plugins.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import ua.com.fleet_wisor.models.user.*
+import ua.com.fleet_wisor.models.user.User
+import ua.com.fleet_wisor.models.user.UserCreate
+import ua.com.fleet_wisor.models.user.UserRepository
+import ua.com.fleet_wisor.models.user.hashPassword
 import ua.com.fleet_wisor.utils.notFoundMessage
 
 fun Route.configureOwnerRouting(
@@ -14,7 +18,15 @@ fun Route.configureOwnerRouting(
     route("/owners") {
         post {
             val user = call.receive<UserCreate>()
-            userRepository.create(user)
+            val hashPassword = hashPassword(user.password)
+            val userWithHashPassword = UserCreate(
+                email = user.email,
+                password = hashPassword,
+                role = user.role,
+                name = user.name,
+                surname = user.surname,
+            )
+            userRepository.create(userWithHashPassword)
             call.respond(HttpStatusCode.Created)
         }
 
@@ -26,6 +38,24 @@ fun Route.configureOwnerRouting(
             } else {
                 throw NotFoundException(notFoundMessage(User::class, id, "Check your id"))
             }
+        }
+        authenticate {
+            get("/me") {
+                val id = call.principal<UserIdPrincipal>()?.name ?: throw IllegalArgumentException("Invalid")
+                val user = userRepository.findById(
+                    id.toIntOrNull() ?: throw NotFoundException(
+                        notFoundMessage(
+                            User::class,
+                            id,
+                            "User not found"
+                        )
+                    )
+                )?: throw NotFoundException(notFoundMessage(User::class, id, "User not found"))
+
+                call.respond(HttpStatusCode.OK, user)
+
+            }
+
         }
         get {
             val user = userRepository.all()
