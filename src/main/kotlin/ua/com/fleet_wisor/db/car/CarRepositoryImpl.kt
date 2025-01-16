@@ -69,8 +69,8 @@ class CarRepositoryImpl : CarRepository {
             database.insert(CarFillUpTable) {
                 set(CarFillUpTable.carId, carFillUpCreate.carId)
                 set(CarFillUpTable.timestamp, Instant.now().epochSecond)
-                set(CarFillUpTable.latitude, carFillUpCreate.latitude)
-                set(CarFillUpTable.longitude, carFillUpCreate.longitude)
+                set(CarFillUpTable.latitude, carFillUpCreate.position.latitude)
+                set(CarFillUpTable.longitude, carFillUpCreate.position.longitude)
                 set(CarFillUpTable.price, carFillUpCreate.price)
             }
         }

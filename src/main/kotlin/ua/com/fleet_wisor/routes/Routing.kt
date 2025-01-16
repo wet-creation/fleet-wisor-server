@@ -4,12 +4,14 @@ import io.ktor.server.application.*
 import io.ktor.server.routing.*
 import ua.com.fleet_wisor.models.user.OwnerRepository
 import ua.com.fleet_wisor.models.car.CarRepository
+import ua.com.fleet_wisor.models.trip.TripRepository
 import ua.com.fleet_wisor.models.user.driver.DriverRepository
 
 fun Application.configureRouting(
     ownerRepository: OwnerRepository,
     driverRepository: DriverRepository,
     carRepository: CarRepository,
+    tripRepository: TripRepository,
 ) {
     routing {
         route("/api/v1") {
@@ -17,6 +19,7 @@ fun Application.configureRouting(
             configureOwnerRouting(ownerRepository)
             configureDriverRouting(driverRepository)
             configureCarRouting(carRepository)
+            configureTripRouting(tripRepository)
         }
 
     }

@@ -84,6 +84,7 @@ CREATE TABLE IF NOT EXISTS `driver_with_car`
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_0900_ai_ci;
 
+
 CREATE TABLE IF NOT EXISTS `car_fill_up`
 (
     `id`        int            NOT NULL AUTO_INCREMENT,
@@ -99,14 +100,14 @@ CREATE TABLE IF NOT EXISTS `car_fill_up`
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_0900_ai_ci;
 
-
--- Таблица user
 INSERT INTO `user` (`id`, `email`, `password`, `name`, `surname`, `role`)
 VALUES (1, 'owner1@example.com', 'securepassword1', 'John', 'Doe', 'OWNER'),
        (2, 'driver1@example.com', 'securepassword2', 'Jane', 'Smith', 'DRIVER'),
        (3, 'owner2@example.com', 'securepassword3', 'Alice', 'Brown', 'OWNER'),
        (4, 'driver2@example.com', 'securepassword4', 'Bob', 'Johnson', 'DRIVER'),
        (5, 'owner3@example.com', 'securepassword5', 'Charlie', 'Williams', 'OWNER');
+
+
 
 
 -- Таблица driver

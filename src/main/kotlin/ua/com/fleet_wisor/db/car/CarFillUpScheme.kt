@@ -5,9 +5,10 @@ import org.ktorm.schema.Table
 import org.ktorm.schema.double
 import org.ktorm.schema.int
 import org.ktorm.schema.long
+import ua.com.fleet_wisor.models.Position
 import ua.com.fleet_wisor.models.car.CarFillUp
 
-object CarFillUpTable: Table<Nothing>("car_fill_up") {
+object CarFillUpTable : Table<Nothing>("car_fill_up") {
 
     val id = int("id").primaryKey()
     var timestamp = long("timestamp")
@@ -18,13 +19,20 @@ object CarFillUpTable: Table<Nothing>("car_fill_up") {
 
 }
 
+fun QueryRowSet.toPosition(): Position {
+    val t = this
+    return Position(
+        latitude = t[CarFillUpTable.latitude]!!,
+        longitude = t[CarFillUpTable.longitude]!!,
+    )
+}
+
 fun QueryRowSet.toFillUp(): CarFillUp {
     val t = this
     return CarFillUp(
         id = t[CarFillUpTable.id]!!,
         timestamp = t[CarFillUpTable.timestamp]!!,
-        latitude = t[CarFillUpTable.latitude]!!,
-        longitude = t[CarFillUpTable.longitude]!!,
+        position = toPosition(),
         price = t[CarFillUpTable.price]!!,
         car = toCar()
     )
