@@ -1,10 +1,15 @@
 package ua.com.fleet_wisor.routes
 
 import io.ktor.http.*
+import io.ktor.http.content.*
 import io.ktor.server.plugins.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.utils.io.*
+import io.ktor.utils.io.streams.*
+import kotlinx.serialization.json.Json
+import ua.com.fleet_wisor.minio.MinioService
 import ua.com.fleet_wisor.models.user.driver.Driver
 import ua.com.fleet_wisor.models.user.driver.DriverCreate
 import ua.com.fleet_wisor.models.user.driver.DriverRepository
@@ -16,18 +21,48 @@ fun Route.configureDriverRouting(
 ) {
     route("/drivers") {
         post {
-            val user = call.receive<DriverCreate>()
-            val hashPassword = hashPassword(user.password)
-            val userWithHashPassword = DriverCreate(
-                email = user.email,
-                password = hashPassword,
-                name = user.name,
-                surname = user.surname,
-                phone = user.phone,
-                driverLicenseNumber = user.driverLicenseNumber,
-                uniqueCode = user.uniqueCode,
-            )
-            driverRepository.create(userWithHashPassword)
+            val multiPart = call.receiveMultipart()
+            var imageName = ""
+            multiPart.forEachPart { part ->
+                when (part.name) {
+                    "image" -> {
+                        println("Hello from file")
+                        part as PartData.FileItem
+                        val contentType = part.contentType?.toString() ?: "application/octet-stream"
+                        imageName = MinioService.uploadPhotoToMinio(
+                            inputStream = part.provider().readBuffer().inputStream(),
+                            contentType = contentType,
+                        )
+
+                    }
+
+                    "body" -> {
+                        part as PartData.FormItem
+                        val jsonBody = part.value
+                        val driver = Json.decodeFromString<DriverCreate>(jsonBody)
+                        val hashPassword = hashPassword(driver.password)
+                        val userWithHashPassword = DriverCreate(
+                            email = driver.email,
+                            password = hashPassword,
+                            name = driver.name,
+                            surname = driver.surname,
+                            phone = driver.phone,
+                            driverLicenseNumber = driver.driverLicenseNumber,
+                            uniqueCode = driver.uniqueCode,
+                            imageUrl = imageName,
+                        )
+                        driverRepository.create(userWithHashPassword)
+
+                    }
+
+                    else -> {
+                        call.respond(HttpStatusCode.BadRequest)
+                    }
+                }
+                part.dispose()
+            }
+
+
             call.respond(HttpStatusCode.Created)
         }
 

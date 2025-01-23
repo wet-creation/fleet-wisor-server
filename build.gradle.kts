@@ -41,6 +41,7 @@ dependencies {
     implementation("io.ktor:ktor-server-cors-jvm")
     implementation("io.ktor:ktor-server-content-negotiation-jvm")
     implementation("io.ktor:ktor-serialization-kotlinx-json-jvm")
+    implementation("io.ktor:ktor-server-config-yaml-jvm")
     implementation("mysql:mysql-connector-java:$mysqlVersion")
     implementation("com.zaxxer:HikariCP:6.2.1")
     implementation("com.h2database:h2:$h2_version")
@@ -50,10 +51,13 @@ dependencies {
     implementation ("org.flywaydb:flyway-core:$flyway_version")
     implementation("io.ktor:ktor-server-netty-jvm")
     implementation("ch.qos.logback:logback-classic:$logback_version")
-    implementation("io.ktor:ktor-server-config-yaml-jvm")
 
     implementation("org.ktorm:ktorm-core:$ktorm_version")
     implementation("at.favre.lib:bcrypt:$bcrypt_version")
-    testImplementation("io.ktor:ktor-server-test-host-jvm")
+    implementation("io.minio:minio:8.5.17")
+
+
+
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
+    testImplementation("io.ktor:ktor-server-test-host-jvm")
 }

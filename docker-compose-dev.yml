@@ -14,6 +14,7 @@ services:
       - fleet-wisor-network
     depends_on:
       - mysql
+      - minio
 
   mysql:
     image: mysql:8.0
@@ -33,6 +34,26 @@ services:
       test: [ "CMD", "mysql", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}", "-e", "SELECT 1" ]
       timeout: 20s
       retries: 5
+
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    command: server /data --console-address ":9001"
+    networks:
+      - fleet-wisor-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
+      timeout: 20s
+      retries: 5
+    volumes:
+      - ./minio/data:/data
+      - ./minio/config:/root/.minio
 
 networks:
   fleet-wisor-network:

@@ -10,15 +10,13 @@ object DatabaseFactory {
     private val dbUrl = getConfig("DB_URL")
     private val dbUser = getConfig("DB_USER")
     private val dbPassword = getConfig("DB_PASSWORD")
-    lateinit var database: Database
+    val database: Database = Database.connect(
+        hikariConfig()
+    )
 
     fun init() {
         println("Initializing DB...")
         println("DB_URL: $dbUrl")
-
-        database = Database.connect(
-            hikariConfig()
-        )
 
 
         val flyway = Flyway.configure()

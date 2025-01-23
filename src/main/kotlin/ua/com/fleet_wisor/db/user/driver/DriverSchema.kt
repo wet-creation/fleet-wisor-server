@@ -13,6 +13,7 @@ object DriverTable : Table<Nothing>("driver") {
     var phone = varchar("phone")
     var driverLicenseNumber = varchar("driverLicenseNumber")
     var uniqueCode = int("uniqueCode")
+    var imageUrl = varchar("imageUrl")
 
 }
 
@@ -26,6 +27,7 @@ fun QueryRowSet.toDriver(): Driver {
         phone = t[DriverTable.phone]!!,
         driverLicenseNumber = t[DriverTable.driverLicenseNumber]!!,
         uniqueCode = t[DriverTable.uniqueCode]!!,
+        imageUrl = t[DriverTable.imageUrl]
     )
 }
 

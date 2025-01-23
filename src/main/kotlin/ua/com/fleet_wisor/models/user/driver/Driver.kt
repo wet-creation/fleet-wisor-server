@@ -8,6 +8,7 @@ data class Driver(
     val name: String,
     val surname: String,
     val email: String,
+    val imageUrl: String?,
     val phone: String,
     val driverLicenseNumber: String,
     val uniqueCode: Int
@@ -17,6 +18,7 @@ data class Driver(
 @Serializable
 data class DriverCreate(
     val email: String,
+    val imageUrl: String? = null,
     val password: String,
     val name: String,
     val surname: String,

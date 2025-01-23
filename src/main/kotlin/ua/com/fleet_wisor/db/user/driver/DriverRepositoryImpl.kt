@@ -63,6 +63,7 @@ class DriverRepositoryImpl : DriverRepository {
                 set(it.phone, driver.phone)
                 set(it.uniqueCode, driver.uniqueCode)
                 set(it.driverLicenseNumber, driver.driverLicenseNumber)
+                set(it.imageUrl, driver.imageUrl)
             }
         }
     }

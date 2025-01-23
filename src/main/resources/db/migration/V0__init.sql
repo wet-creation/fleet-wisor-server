@@ -17,9 +17,11 @@ CREATE TABLE IF NOT EXISTS `driver`
 (
     `userId`              int          NOT NULL,
     `phone`               varchar(255) NOT NULL,
+    `imageUrl`            varchar(60)  NULL,
     `driverLicenseNumber` varchar(255) NOT NULL,
     `uniqueCode`          int          NOT NULL,
     UNIQUE KEY `driver_userId_unique` (`userId`),
+    UNIQUE KEY `driver_uniqueCode_unique` (`uniqueCode`),
     CONSTRAINT `fk_driver_userId__id` FOREIGN KEY (`userId`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 )
     DEFAULT CHARSET = utf8mb4
@@ -101,13 +103,20 @@ CREATE TABLE IF NOT EXISTS `car_fill_up`
     COLLATE = utf8mb4_0900_ai_ci;
 
 INSERT INTO `user` (`id`, `email`, `password`, `name`, `surname`, `role`)
-VALUES (1, 'owner1@example.com', '$2a$12$pD7gtqjFc0oSfwUCOlTkMuB7yhPzDaDpiC0dfnLWSgJCL1JmrPWWG', 'John', 'Doe', 'OWNER'),
-       (2, 'driver1@example.com', '$2a$12$pD7gtqjFc0oSfwUCOlTkMuB7yhPzDaDpiC0dfnLWSgJCL1JmrPWWG', 'Jane', 'Smith', 'DRIVER'),
-       (3, 'owner2@example.com', '$2a$12$pD7gtqjFc0oSfwUCOlTkMuB7yhPzDaDpiC0dfnLWSgJCL1JmrPWWG', 'Alice', 'Brown', 'OWNER'),
-       (4, 'driver2@example.com', '$2a$12$pD7gtqjFc0oSfwUCOlTkMuB7yhPzDaDpiC0dfnLWSgJCL1JmrPWWG', 'Bob', 'Johnson', 'DRIVER'),
-       (5, 'owner3@example.com', '$2a$12$pD7gtqjFc0oSfwUCOlTkMuB7yhPzDaDpiC0dfnLWSgJCL1JmrPWWG', 'Charlie', 'Williams', 'OWNER'),
-       (6, 'mishao@mail.com', '$2a$12$pD7gtqjFc0oSfwUCOlTkMuB7yhPzDaDpiC0dfnLWSgJCL1JmrPWWG', 'Misha', 'Nedobitkin', 'OWNER'),
-       (7, 'mishad@mail.com', '$2a$12$pD7gtqjFc0oSfwUCOlTkMuB7yhPzDaDpiC0dfnLWSgJCL1JmrPWWG', 'Misha', 'Nedobitkin', 'DRIVER');
+VALUES (1, 'owner1@example.com', '$2a$12$pD7gtqjFc0oSfwUCOlTkMuB7yhPzDaDpiC0dfnLWSgJCL1JmrPWWG', 'John', 'Doe',
+        'OWNER'),
+       (2, 'driver1@example.com', '$2a$12$pD7gtqjFc0oSfwUCOlTkMuB7yhPzDaDpiC0dfnLWSgJCL1JmrPWWG', 'Jane', 'Smith',
+        'DRIVER'),
+       (3, 'owner2@example.com', '$2a$12$pD7gtqjFc0oSfwUCOlTkMuB7yhPzDaDpiC0dfnLWSgJCL1JmrPWWG', 'Alice', 'Brown',
+        'OWNER'),
+       (4, 'driver2@example.com', '$2a$12$pD7gtqjFc0oSfwUCOlTkMuB7yhPzDaDpiC0dfnLWSgJCL1JmrPWWG', 'Bob', 'Johnson',
+        'DRIVER'),
+       (5, 'owner3@example.com', '$2a$12$pD7gtqjFc0oSfwUCOlTkMuB7yhPzDaDpiC0dfnLWSgJCL1JmrPWWG', 'Charlie', 'Williams',
+        'OWNER'),
+       (6, 'mishao@mail.com', '$2a$12$pD7gtqjFc0oSfwUCOlTkMuB7yhPzDaDpiC0dfnLWSgJCL1JmrPWWG', 'Misha', 'Nedobitkin',
+        'OWNER'),
+       (7, 'mishad@mail.com', '$2a$12$pD7gtqjFc0oSfwUCOlTkMuB7yhPzDaDpiC0dfnLWSgJCL1JmrPWWG', 'Misha', 'Nedobitkin',
+        'DRIVER');
 
 
 -- Таблица driver

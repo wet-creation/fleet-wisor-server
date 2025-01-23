@@ -7,6 +7,7 @@ import ua.com.fleet_wisor.db.trip.TripRepositoryImpl
 import ua.com.fleet_wisor.db.user.UserRepositoryImpl
 import ua.com.fleet_wisor.db.user.driver.DriverRepositoryImpl
 import ua.com.fleet_wisor.di.configureFrameworks
+import ua.com.fleet_wisor.minio.MinioService
 import ua.com.fleet_wisor.plugins.configureAuth
 import ua.com.fleet_wisor.plugins.configureContentNegotiation
 import ua.com.fleet_wisor.plugins.configureStatusPages
@@ -21,6 +22,7 @@ fun Application.module() {
     configureContentNegotiation()
     configureFrameworks()
     DatabaseFactory.init()
+    MinioService.init()
     configureStatusPages()
     configureRouting(
         userRepository = UserRepositoryImpl(),
