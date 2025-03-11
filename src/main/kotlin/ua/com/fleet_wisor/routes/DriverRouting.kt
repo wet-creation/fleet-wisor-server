@@ -10,10 +10,7 @@ import io.ktor.utils.io.*
 import io.ktor.utils.io.streams.*
 import kotlinx.serialization.json.Json
 import ua.com.fleet_wisor.minio.MinioService
-import ua.com.fleet_wisor.models.user.driver.Driver
-import ua.com.fleet_wisor.models.user.driver.DriverCreate
-import ua.com.fleet_wisor.models.user.driver.DriverRepository
-import ua.com.fleet_wisor.models.user.hashPassword
+import ua.com.fleet_wisor.models.driver.*
 import ua.com.fleet_wisor.utils.notFoundMessage
 
 fun Route.configureDriverRouting(
@@ -22,14 +19,24 @@ fun Route.configureDriverRouting(
     route("/drivers") {
         post {
             val multiPart = call.receiveMultipart()
-            var imageName = ""
+            var frontPhotoName = ""
+            var backPhotoName = ""
             multiPart.forEachPart { part ->
                 when (part.name) {
-                    "image" -> {
-                        println("Hello from file")
+                    "frontPhotoName" -> {
                         part as PartData.FileItem
                         val contentType = part.contentType?.toString() ?: "application/octet-stream"
-                        imageName = MinioService.uploadPhotoToMinio(
+                        frontPhotoName = MinioService.uploadPhotoToMinio(
+                            inputStream = part.provider().readBuffer().inputStream(),
+                            contentType = contentType,
+                        )
+
+                    }
+
+                    "backPhotoName" -> {
+                        part as PartData.FileItem
+                        val contentType = part.contentType?.toString() ?: "application/octet-stream"
+                        backPhotoName = MinioService.uploadPhotoToMinio(
                             inputStream = part.provider().readBuffer().inputStream(),
                             contentType = contentType,
                         )
@@ -39,19 +46,19 @@ fun Route.configureDriverRouting(
                     "body" -> {
                         part as PartData.FormItem
                         val jsonBody = part.value
-                        val driver = Json.decodeFromString<DriverCreate>(jsonBody)
-                        val hashPassword = hashPassword(driver.password)
-                        val userWithHashPassword = DriverCreate(
-                            email = driver.email,
-                            password = hashPassword,
-                            name = driver.name,
-                            surname = driver.surname,
-                            phone = driver.phone,
-                            driverLicenseNumber = driver.driverLicenseNumber,
-                            uniqueCode = driver.uniqueCode,
-                            imageUrl = imageName,
+                        val driverApi = Json.decodeFromString<DriverCreateApi>(jsonBody)
+                        val driver = DriverCreate(
+                            ownerId = driverApi.ownerId,
+                            name = driverApi.name,
+                            surname = driverApi.surname,
+                            phone = driverApi.phone,
+                            driverLicenseNumber = driverApi.driverLicenseNumber,
+                            frontLicensePhotoUrl = frontPhotoName,
+                            backLicensePhotoUrl = backPhotoName,
+                            birthdayDate = driverApi.birthdayDate,
+                            salary = driverApi.salary
                         )
-                        driverRepository.create(userWithHashPassword)
+                        driverRepository.create(driver)
 
                     }
 
@@ -66,13 +73,19 @@ fun Route.configureDriverRouting(
             call.respond(HttpStatusCode.Created)
         }
 
-        get("/{id}") {
-            val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
-            val user = driverRepository.findById(id)
-            if (user != null) {
-                call.respond(HttpStatusCode.OK, user)
-            } else {
-                throw NotFoundException(notFoundMessage(Driver::class, id, "Check your id"))
+        route("/{id}") {
+            get {
+                val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
+                val user = driverRepository.findById(id)
+                if (user != null) {
+                    call.respond(HttpStatusCode.OK, user)
+                } else {
+                    throw NotFoundException(notFoundMessage(Driver::class, id, "Check your id"))
+                }
+            }
+            get("/cars") {
+                val driverWithCars = driverRepository.driverWithCars()
+                call.respond(driverWithCars)
             }
         }
         get {

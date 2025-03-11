@@ -1,6 +1,6 @@
 package ua.com.fleet_wisor.models.car
 
-import ua.com.fleet_wisor.models.user.driver.DriverWithCarCreate
+import ua.com.fleet_wisor.models.driver.DriverWithCarCreate
 
 interface CarRepository {
 
@@ -16,5 +16,11 @@ interface CarRepository {
 
     suspend fun assignDriver(driverWithCarCreate: DriverWithCarCreate)
 
+    suspend fun addInsurance(insurance: InsuranceCreate)
+    suspend fun allInsurances(): List<Insurance>
 
+    suspend fun addMaintenance(maintenance: MaintenanceCreate)
+    suspend fun allMaintenance(): List<Maintenance>
+    suspend fun allCarBody(): List<CarBody>
+    suspend fun allFuelType(): List<FuelType>
 }

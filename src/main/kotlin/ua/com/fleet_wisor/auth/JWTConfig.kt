@@ -10,8 +10,8 @@ object JWTConfig {
     private val secret = getConfig("JWT_SECRET")
     private val issuer = getConfig("ISSUER")
     private val audience = getConfig("AUDIENCE")
-    private const val accessTokenValidity = 30000L
-    private const val refreshTokenValidity = 7 * 24 * 60 * 60 * 1000L
+    private const val AccessTokenValidity = 30000L
+    private const val RefreshTokenValidity = 7 * 24 * 60 * 60 * 1000L
 
     val refreshTokens = mutableMapOf<String, String>()
 
@@ -22,7 +22,7 @@ object JWTConfig {
             .withIssuer(issuer)
             .withAudience(audience)
             .withClaim("userId", userId)
-            .withExpiresAt(Instant.now().plusMillis(accessTokenValidity))
+            .withExpiresAt(Instant.now().plusMillis(AccessTokenValidity))
             .sign(algorithm)
     }
 
@@ -31,7 +31,7 @@ object JWTConfig {
             .withIssuer(issuer)
             .withAudience(audience)
             .withClaim("userId", userId)
-            .withExpiresAt(Instant.now().plusMillis(refreshTokenValidity))
+            .withExpiresAt(Instant.now().plusMillis(RefreshTokenValidity))
             .sign(algorithm)
     }
 

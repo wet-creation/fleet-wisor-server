@@ -2,22 +2,57 @@ package ua.com.fleet_wisor.db.car
 
 import org.ktorm.dsl.*
 import ua.com.fleet_wisor.db.transactionalQuery
-import ua.com.fleet_wisor.db.user.UserTable
-import ua.com.fleet_wisor.db.user.driver.assignCarToDriver
+import ua.com.fleet_wisor.db.user.OwnerTable
+import ua.com.fleet_wisor.db.driver.assignCarToDriver
+import ua.com.fleet_wisor.db.mapCollection
 import ua.com.fleet_wisor.models.car.*
-import ua.com.fleet_wisor.models.user.driver.DriverWithCarCreate
-import java.time.Instant
+import ua.com.fleet_wisor.models.driver.DriverWithCarCreate
+import java.time.LocalDate
+import java.time.LocalDateTime
+
 
 class CarRepositoryImpl : CarRepository {
+
+    private fun mergeCars(existing: Car, newCar: Car): Car {
+        return existing.copy(fuelTypes = existing.fuelTypes + newCar.fuelTypes)
+    }
+
+    private fun mergeMaintenance(old: Maintenance, new: Maintenance): Maintenance {
+        return old.copy(car = mergeCars(old.car, new.car))
+    }
+
+    private fun mergeFillUp(existing: CarFillUp, new: CarFillUp): CarFillUp {
+        return existing.copy(car = mergeCars(existing.car, new.car))
+    }
+
+    private fun mergeInsurance(existing: Insurance, new: Insurance): Insurance {
+        return existing.copy(car = mergeCars(existing.car, new.car))
+    }
+
     override suspend fun all(): List<Car> {
         return transactionalQuery { database ->
             database.from(CarTable)
                 .innerJoin(CarBodyTable, CarTable.carBodyId eq CarBodyTable.id)
                 .innerJoin(
-                    FuelTypeTable, FuelTypeTable.id eq CarTable.fuelTypeId
-                ).innerJoin(
-                    UserTable, UserTable.id eq CarTable.ownerId
-                ).select().map { it.toCar() }
+                    CarFuelTypesTable, CarFuelTypesTable.carId eq CarTable.id
+                )
+                .innerJoin(
+                    FuelTypeTable, FuelTypeTable.id eq CarFuelTypesTable.fuelTypeId
+                )
+                .innerJoin(
+                    OwnerTable, OwnerTable.id eq CarTable.ownerId
+                ).select().groupBy(
+                    CarTable.id,
+                    CarFuelTypesTable.carId,
+                    CarBodyTable.id,
+                    OwnerTable.id,
+                    CarFuelTypesTable.fuelTypeId,
+                    FuelTypeTable.id
+                ).mapCollection(idColumn = CarTable.id, merge = ::mergeCars) {
+                    it.toCar()
+                }
+
+
         }
     }
 
@@ -26,10 +61,16 @@ class CarRepositoryImpl : CarRepository {
             database.from(CarTable)
                 .innerJoin(CarBodyTable, CarTable.carBodyId eq CarBodyTable.id)
                 .innerJoin(
-                    FuelTypeTable, FuelTypeTable.id eq CarTable.fuelTypeId
-                ).innerJoin(
-                    UserTable, UserTable.id eq CarTable.ownerId
-                ).select().map { it.toCar() }.firstOrNull()
+                    CarFuelTypesTable, CarFuelTypesTable.carId eq CarTable.id
+                )
+                .innerJoin(
+                    FuelTypeTable, FuelTypeTable.id eq CarFuelTypesTable.fuelTypeId
+                )
+                .innerJoin(
+                    OwnerTable, OwnerTable.id eq CarTable.ownerId
+                ).select().where { CarTable.id eq id }.mapCollection(CarTable.id, ::mergeCars) {
+                    it.toCar()
+                }.firstOrNull()
         }
     }
 
@@ -47,8 +88,7 @@ class CarRepositoryImpl : CarRepository {
 
     override suspend fun create(car: CarCreate) {
         transactionalQuery { database ->
-            database.insert(CarTable) {
-                set(it.name, car.name)
+            val id = database.insertAndGenerateKey(CarTable) {
                 set(it.brandName, car.brandName)
                 set(it.color, car.color)
                 set(it.vin, car.vin)
@@ -57,8 +97,15 @@ class CarRepositoryImpl : CarRepository {
                 set(it.mileAge, car.mileAge)
                 set(it.carBodyId, car.carBodyId)
                 set(it.ownerId, car.ownerId)
-                set(it.fuelTypeId, car.fuelTypeId)
+            } as Int
+
+            car.fuelTypes.forEach { typeId ->
+                database.insert(CarFuelTypesTable) {
+                    set(it.carId, id)
+                    set(it.fuelTypeId, typeId)
+                }
             }
+
         }
 
 
@@ -68,9 +115,8 @@ class CarRepositoryImpl : CarRepository {
         transactionalQuery { database ->
             database.insert(CarFillUpTable) {
                 set(CarFillUpTable.carId, carFillUpCreate.carId)
-                set(CarFillUpTable.timestamp, Instant.now().epochSecond)
-                set(CarFillUpTable.latitude, carFillUpCreate.position.latitude)
-                set(CarFillUpTable.longitude, carFillUpCreate.position.longitude)
+                set(CarFillUpTable.time, LocalDateTime.parse(carFillUpCreate.time))
+                set(CarFillUpTable.checkUrl, carFillUpCreate.checkUrl)
                 set(CarFillUpTable.price, carFillUpCreate.price)
             }
         }
@@ -78,18 +124,92 @@ class CarRepositoryImpl : CarRepository {
 
     override suspend fun allFillUps(): List<CarFillUp> {
         return transactionalQuery { database ->
-            database.from(CarFillUpTable).innerJoin(CarTable, CarFillUpTable.carId eq CarTable.id)
+            database.from(CarFillUpTable)
+                .innerJoin(CarTable, CarFillUpTable.carId eq CarTable.id)
                 .innerJoin(CarBodyTable, CarTable.carBodyId eq CarBodyTable.id)
                 .innerJoin(
-                    FuelTypeTable, FuelTypeTable.id eq CarTable.fuelTypeId
+                    CarFuelTypesTable, CarFuelTypesTable.carId eq CarTable.id
+                )
+                .innerJoin(
+                    FuelTypeTable, FuelTypeTable.id eq CarFuelTypesTable.fuelTypeId
                 ).innerJoin(
-                    UserTable, UserTable.id eq CarTable.ownerId
-                ).select().map { it.toFillUp() }
+                    OwnerTable, OwnerTable.id eq CarTable.ownerId
+                ).select().mapCollection(CarFillUpTable.id, ::mergeFillUp) {
+                    it.toFillUp()
+                }
         }
     }
 
     override suspend fun assignDriver(driverWithCarCreate: DriverWithCarCreate) {
         assignCarToDriver(driverWithCarCreate)
 
+    }
+
+    override suspend fun addInsurance(insurance: InsuranceCreate) {
+        transactionalQuery { database ->
+            database.insert(InsuranceTable) {
+                set(it.carId, insurance.carId)
+                set(it.endDate, LocalDate.parse(insurance.endDate))
+                set(it.startDate, LocalDate.parse(insurance.startDate))
+                set(it.photoUrl, insurance.photoUrl)
+            }
+        }
+    }
+
+    override suspend fun allInsurances(): List<Insurance> {
+        return transactionalQuery { database ->
+            database.from(InsuranceTable)
+                .innerJoin(CarTable, InsuranceTable.carId eq CarTable.id)
+                .innerJoin(CarBodyTable, CarTable.carBodyId eq CarBodyTable.id)
+                .innerJoin(
+                    CarFuelTypesTable, CarFuelTypesTable.carId eq CarTable.id
+                )
+                .innerJoin(
+                    FuelTypeTable, FuelTypeTable.id eq CarFuelTypesTable.fuelTypeId
+                ).innerJoin(
+                    OwnerTable, OwnerTable.id eq CarTable.ownerId
+                ).select().mapCollection(CarTable.id, ::mergeInsurance) { it.toInsurance() }
+        }
+    }
+
+    override suspend fun addMaintenance(maintenance: MaintenanceCreate) {
+        transactionalQuery { database ->
+            database.insert(MaintenanceTable) {
+                set(it.carId, maintenance.carId)
+                set(it.price, maintenance.price)
+                set(it.check, maintenance.checkUrl)
+                set(it.description, maintenance.description)
+                set(it.time, LocalDateTime.parse(maintenance.time))
+            }
+        }
+    }
+
+    override suspend fun allMaintenance(): List<Maintenance> {
+        return transactionalQuery { database ->
+            database.from(MaintenanceTable)
+                .innerJoin(CarTable, MaintenanceTable.carId eq CarTable.id)
+                .innerJoin(CarBodyTable, CarTable.carBodyId eq CarBodyTable.id)
+                .innerJoin(
+                    CarFuelTypesTable, CarFuelTypesTable.carId eq CarTable.id
+                )
+                .innerJoin(
+                    FuelTypeTable, FuelTypeTable.id eq CarFuelTypesTable.fuelTypeId
+                ).innerJoin(
+                    OwnerTable, OwnerTable.id eq CarTable.ownerId
+                ).select().mapCollection(MaintenanceTable.id, ::mergeMaintenance) { it.toMaintenance() }
+
+        }
+    }
+
+    override suspend fun allCarBody(): List<CarBody> {
+        return transactionalQuery { database ->
+            database.from(CarBodyTable).select().map { it.toCarBody() }
+        }
+    }
+
+    override suspend fun allFuelType(): List<FuelType> {
+        return transactionalQuery { database ->
+            database.from(FuelTypeTable).select().map { it.toFuelType() }
+        }
     }
 }

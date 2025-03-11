@@ -4,6 +4,10 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import org.flywaydb.core.Flyway
 import org.ktorm.database.Database
+import org.ktorm.dsl.Query
+import org.ktorm.dsl.QueryRowSet
+import org.ktorm.dsl.forEach
+import org.ktorm.schema.Column
 import ua.com.fleet_wisor.utils.getConfig
 
 object DatabaseFactory {
@@ -21,7 +25,9 @@ object DatabaseFactory {
 
         val flyway = Flyway.configure()
             .dataSource(dbUrl, dbUser, dbPassword)
+            .baselineOnMigrate(true)
             .load()
+
 
         flyway.migrate()
     }
@@ -43,4 +49,22 @@ object DatabaseFactory {
 
 fun <T> transactionalQuery(block: (Database) -> T): T {
     return DatabaseFactory.database.useTransaction { block(DatabaseFactory.database) }
+}
+
+
+fun <K : Any, V> Query.mapCollection(
+    idColumn: Column<K>,
+    merge: (existing: V, newItem: V) -> V,
+    transform: (QueryRowSet) -> V
+): List<V> {
+    val map = mutableMapOf<K, V>()
+
+    this.forEach { row ->
+        val id = row[idColumn]!!
+        val newItem = transform(row)
+
+        map[id] = map[id]?.let { existing -> merge(existing, newItem) } ?: newItem
+    }
+
+    return map.values.toList()
 }

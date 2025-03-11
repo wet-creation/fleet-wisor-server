@@ -5,12 +5,9 @@ import io.ktor.server.plugins.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import ua.com.fleet_wisor.models.car.Car
-import ua.com.fleet_wisor.models.car.CarCreate
-import ua.com.fleet_wisor.models.car.CarFillUpCreate
-import ua.com.fleet_wisor.models.car.CarRepository
-import ua.com.fleet_wisor.models.user.User
-import ua.com.fleet_wisor.models.user.driver.DriverWithCarCreate
+import ua.com.fleet_wisor.models.car.*
+import ua.com.fleet_wisor.models.user.Owner
+import ua.com.fleet_wisor.models.driver.DriverWithCarCreate
 import ua.com.fleet_wisor.utils.notFoundMessage
 
 fun Route.configureCarRouting(
@@ -21,6 +18,15 @@ fun Route.configureCarRouting(
             val car = call.receive<CarCreate>()
             carRepository.create(car)
             call.respond(HttpStatusCode.Created)
+        }
+
+        get("/fuel-type") {
+            val list = carRepository.allFuelType()
+            call.respond(HttpStatusCode.OK, list.sortedBy { it.id })
+        }
+        get("/car-body") {
+            val list = carRepository.allCarBody()
+            call.respond(HttpStatusCode.OK, list.sortedBy { it.id })
         }
 
 
@@ -49,11 +55,36 @@ fun Route.configureCarRouting(
             }
 
             post {
-                val carFillUp = call.receive<CarFillUpCreate>()
+                val carFillUp = call.receive<CarFillUpCreate>()//todo photo
                 carRepository.fillUpCar(carFillUp)
                 call.respond(HttpStatusCode.Created)
             }
 
+        }
+        route("/maintenance") {
+            get {
+                val maintenance = carRepository.allMaintenance()
+                call.respond(HttpStatusCode.OK, maintenance)
+            }
+
+            post {
+                val maintenance = call.receive<MaintenanceCreate>()//todo photo
+                carRepository.addMaintenance(maintenance)
+                call.respond(HttpStatusCode.Created)
+            }
+
+        }
+        route("/insurance") {
+            get {
+                val insurance = carRepository.allInsurances()
+                call.respond(HttpStatusCode.OK, insurance)
+            }
+
+            post {
+                val insurance = call.receive<InsuranceCreate>() //todo photo
+                carRepository.addInsurance(insurance)
+                call.respond(HttpStatusCode.Created)
+            }
 
         }
         route("/driver") {
@@ -68,7 +99,7 @@ fun Route.configureCarRouting(
             val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
             if (carRepository.delete(id))
                 call.respond(HttpStatusCode.OK)
-            else throw NotFoundException(notFoundMessage(User::class, id, "Check your id"))
+            else throw NotFoundException(notFoundMessage(Owner::class, id, "Check your id"))
         }
     }
 }

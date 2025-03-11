@@ -8,12 +8,12 @@ import ua.com.fleet_wisor.auth.JWTConfig
 import ua.com.fleet_wisor.models.user.*
 
 fun Route.configureAuthRouting(
-    userRepository: UserRepository,
+    ownerRepository: OwnerRepository,
 ) {
     route("/auth") {
         post("/login") {
             val request = call.receive<LoginRequest>()
-            val user = userRepository.findByEmail(request.email)
+            val user = ownerRepository.findByEmail(request.email)
             if (user == null || !verifyPassword(request.password, user.password)) {
                 call.respond(HttpStatusCode.Unauthorized, "Invalid email or password")
                 return@post

@@ -1,170 +1,101 @@
-CREATE TABLE IF NOT EXISTS `user`
+CREATE TABLE IF NOT EXISTS owner
 (
-    `id`       int                     NOT NULL AUTO_INCREMENT,
-    `email`    varchar(255)            NOT NULL,
-    `password` varchar(255)            NOT NULL,
-    `name`     varchar(255)            NOT NULL,
-    `surname`  varchar(255)            NOT NULL,
-    `role`     enum ('OWNER','DRIVER') NOT NULL,
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `user_email_unique` (`email`)
-)
-    DEFAULT CHARSET = utf8mb4
-    COLLATE = utf8mb4_0900_ai_ci;
+    id       INT PRIMARY KEY AUTO_INCREMENT,
+    name     VARCHAR(255)        NOT NULL,
+    surname  VARCHAR(255)        NOT NULL,
+    email    VARCHAR(254) UNIQUE NOT NULL,
+    password VARCHAR(254)        NOT NULL
+);
 
-
-CREATE TABLE IF NOT EXISTS `driver`
+CREATE TABLE IF NOT EXISTS driver
 (
-    `userId`              int          NOT NULL,
-    `phone`               varchar(255) NOT NULL,
-    `imageUrl`            varchar(60)  NULL,
-    `driverLicenseNumber` varchar(255) NOT NULL,
-    `uniqueCode`          int          NOT NULL,
-    UNIQUE KEY `driver_userId_unique` (`userId`),
-    UNIQUE KEY `driver_uniqueCode_unique` (`uniqueCode`),
-    CONSTRAINT `fk_driver_userId__id` FOREIGN KEY (`userId`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-)
-    DEFAULT CHARSET = utf8mb4
-    COLLATE = utf8mb4_0900_ai_ci;
+    id                   INT PRIMARY KEY AUTO_INCREMENT,
+    ownerId              INT                NOT NULL,
+    driverLicenseNumber  VARCHAR(50) UNIQUE NOT NULL,
+    name                 VARCHAR(255)       NOT NULL,
+    surname              VARCHAR(255)       NOT NULL,
+    phone                VARCHAR(20) UNIQUE NOT NULL,
+    frontLicensePhotoUrl VARCHAR(255)       NOT NULL,
+    backLicensePhotoUrl  VARCHAR(255)       NOT NULL,
+    salary               FLOAT(8)           NOT NULL,
+    birthday             DATE               NOT NULL,
+    FOREIGN KEY (ownerId) REFERENCES owner (id) ON DELETE CASCADE
+);
 
-
-CREATE TABLE IF NOT EXISTS `car_body`
+CREATE TABLE IF NOT EXISTS car_body
 (
-    `id`   int          NOT NULL AUTO_INCREMENT,
-    `name` varchar(255) NOT NULL,
-    PRIMARY KEY (`id`)
-)
-    DEFAULT CHARSET = utf8mb4
-    COLLATE = utf8mb4_0900_ai_ci;
+    id   INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(20) NOT NULL UNIQUE
+);
 
-
-CREATE TABLE IF NOT EXISTS `fuel_type`
+CREATE TABLE IF NOT EXISTS car
 (
-    `id`   int          NOT NULL AUTO_INCREMENT,
-    `name` varchar(255) NOT NULL,
-    PRIMARY KEY (`id`)
-)
-    DEFAULT CHARSET = utf8mb4
-    COLLATE = utf8mb4_0900_ai_ci;
+    id           INT PRIMARY KEY AUTO_INCREMENT,
+    brandName    VARCHAR(20)        NOT NULL,
+    ownerId      INT                NOT NULL,
+    carBodyId    INT                NOT NULL,
+    color        VARCHAR(20),
+    vin          VARCHAR(18) UNIQUE,
+    mileage      BIGINT DEFAULT 0,
+    model        VARCHAR(20),
+    licensePlate VARCHAR(20) UNIQUE NULL,
+    FOREIGN KEY (ownerId) REFERENCES owner (id) ON DELETE CASCADE,
+    FOREIGN KEY (carBodyId) REFERENCES car_body (id) ON DELETE CASCADE
+);
 
-
-
-CREATE TABLE IF NOT EXISTS `car`
+CREATE TABLE IF NOT EXISTS driver_with_car
 (
-    `id`           int          NOT NULL AUTO_INCREMENT,
-    `name`         varchar(255) NOT NULL,
-    `brandName`    varchar(255) NOT NULL,
-    `color`        varchar(50)           DEFAULT NULL,
-    `vin`          varchar(18)           DEFAULT NULL,
-    `model`        varchar(255)          DEFAULT NULL,
-    `licensePlate` varchar(50)           DEFAULT NULL,
-    `mileAge`      int          NOT NULL DEFAULT '0',
-    `ownerId`      int          NOT NULL,
-    `carBodyId`    int          NOT NULL,
-    `fuelTypeId`   int          NOT NULL,
-    PRIMARY KEY (`id`),
-    CONSTRAINT `fk_car_carBodyId__id` FOREIGN KEY (`carBodyId`) REFERENCES `car_body` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT `fk_car_fuelTypeId__id` FOREIGN KEY (`fuelTypeId`) REFERENCES `fuel_type` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT `fk_car_ownerId__userId` FOREIGN KEY (`ownerId`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-)
-    DEFAULT CHARSET = utf8mb4
-    COLLATE = utf8mb4_0900_ai_ci;
+    id        INT PRIMARY KEY AUTO_INCREMENT,
+    carId     INT      NOT NULL,
+    driverId  INT      NOT NULL,
+    timeStart DATETIME NOT NULL,
+    timeEnd   DATETIME NULL,
+    FOREIGN KEY (carId) REFERENCES car (id) ON DELETE CASCADE,
+    FOREIGN KEY (driverId) REFERENCES driver (id) ON DELETE CASCADE
+);
 
-CREATE TABLE IF NOT EXISTS `driver_with_car`
+CREATE TABLE IF NOT EXISTS maintenance
 (
-    `id`             int    NOT NULL AUTO_INCREMENT,
-    `timestampStart` bigint NOT NULL,
-    `timestampEnd`   bigint DEFAULT NULL,
-    `driverId`       int    NOT NULL,
-    `carId`          int    NOT NULL,
-    PRIMARY KEY (`id`),
-    KEY `fk_driver_with_car_driverId__userId` (`driverId`),
-    KEY `fk_driver_with_car_carId__id` (`carId`),
-    CONSTRAINT `fk_driver_with_car_carId__id` FOREIGN KEY (`carId`) REFERENCES `car` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
-    CONSTRAINT `fk_driver_with_car_driverId__userId` FOREIGN KEY (`driverId`) REFERENCES `driver` (`userId`) ON DELETE RESTRICT ON UPDATE RESTRICT
-)
-    DEFAULT CHARSET = utf8mb4
-    COLLATE = utf8mb4_0900_ai_ci;
+    id          INT PRIMARY KEY AUTO_INCREMENT,
+    carId       INT           NOT NULL,
+    description VARCHAR(2000) NOT NULL,
+    price       FLOAT(8)      NOT NULL,
+    time        DATETIME      NOT NULL,
+    checkUrl    VARCHAR(255),
+    FOREIGN KEY (carId) REFERENCES car (id) ON DELETE CASCADE
+);
 
-
-CREATE TABLE IF NOT EXISTS `car_fill_up`
+CREATE TABLE IF NOT EXISTS car_fill_up
 (
-    `id`        int            NOT NULL AUTO_INCREMENT,
-    `timestamp` bigint         NOT NULL,
-    `latitude`  DECIMAL(9, 6) DEFAULT NULL,
-    `longitude` DECIMAL(9, 6) DEFAULT NULL,
-    `price`     DECIMAL(10, 2) NOT NULL,
-    `carId`     int            NOT NULL,
-    PRIMARY KEY (`id`),
-    KEY `fk_car_fill_up_carId__id` (`carId`),
-    CONSTRAINT `fk_car_fill_up_carId__id` FOREIGN KEY (`carId`) REFERENCES `car` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-)
-    DEFAULT CHARSET = utf8mb4
-    COLLATE = utf8mb4_0900_ai_ci;
+    id       INT PRIMARY KEY AUTO_INCREMENT,
+    carId    INT      NOT NULL,
+    time     DATETIME NOT NULL,
+    price    FLOAT(8) NOT NULL,
+    checkUrl VARCHAR(255),
+    FOREIGN KEY (carId) REFERENCES car (id) ON DELETE CASCADE
+);
 
-INSERT INTO `user` (`id`, `email`, `password`, `name`, `surname`, `role`)
-VALUES (1, 'owner1@example.com', '$2a$12$pD7gtqjFc0oSfwUCOlTkMuB7yhPzDaDpiC0dfnLWSgJCL1JmrPWWG', 'John', 'Doe',
-        'OWNER'),
-       (2, 'driver1@example.com', '$2a$12$pD7gtqjFc0oSfwUCOlTkMuB7yhPzDaDpiC0dfnLWSgJCL1JmrPWWG', 'Jane', 'Smith',
-        'DRIVER'),
-       (3, 'owner2@example.com', '$2a$12$pD7gtqjFc0oSfwUCOlTkMuB7yhPzDaDpiC0dfnLWSgJCL1JmrPWWG', 'Alice', 'Brown',
-        'OWNER'),
-       (4, 'driver2@example.com', '$2a$12$pD7gtqjFc0oSfwUCOlTkMuB7yhPzDaDpiC0dfnLWSgJCL1JmrPWWG', 'Bob', 'Johnson',
-        'DRIVER'),
-       (5, 'owner3@example.com', '$2a$12$pD7gtqjFc0oSfwUCOlTkMuB7yhPzDaDpiC0dfnLWSgJCL1JmrPWWG', 'Charlie', 'Williams',
-        'OWNER'),
-       (6, 'mishao@mail.com', '$2a$12$pD7gtqjFc0oSfwUCOlTkMuB7yhPzDaDpiC0dfnLWSgJCL1JmrPWWG', 'Misha', 'Nedobitkin',
-        'OWNER'),
-       (7, 'mishad@mail.com', '$2a$12$pD7gtqjFc0oSfwUCOlTkMuB7yhPzDaDpiC0dfnLWSgJCL1JmrPWWG', 'Misha', 'Nedobitkin',
-        'DRIVER');
+CREATE TABLE IF NOT EXISTS fuel_type
+(
+    id   INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(20) NOT NULL UNIQUE
+);
 
+CREATE TABLE IF NOT EXISTS car_fuel_types
+(
+    fuelTypeId INT NOT NULL,
+    carId      INT NOT NULL,
+    PRIMARY KEY (fuelTypeId, carId),
+    FOREIGN KEY (fuelTypeId) REFERENCES fuel_type (id) ON DELETE CASCADE,
+    FOREIGN KEY (carId) REFERENCES car (id) ON DELETE CASCADE
+);
 
--- Таблица driver
-INSERT INTO `driver` (`userId`, `phone`, `driverLicenseNumber`, `uniqueCode`)
-VALUES (2, '123-456-7890', 'DL12345678', 1001),
-       (4, '987-654-3210', 'DL87654321', 1002);
-
-
--- Таблица car_body
-INSERT INTO `car_body` (`id`, `name`)
-VALUES (1, 'Sedan'),
-       (2, 'SUV'),
-       (3, 'Hatchback'),
-       (4, 'Coupe'),
-       (5, 'Convertible'),
-       (6, 'Wagon'),
-       (7, 'Pickup'),
-       (8, 'Van');
-
--- Таблица fuel_type
-INSERT INTO `fuel_type` (`id`, `name`)
-VALUES (1, 'Petrol'),
-       (2, 'Diesel'),
-       (3, 'Electric'),
-       (4, 'Hybrid'),
-       (5, 'LPG'),
-       (6, 'CNG');
-
--- Таблица car
-INSERT INTO `car` (`id`, `name`, `brandName`, `color`, `vin`, `model`, `licensePlate`, `mileAge`, `ownerId`,
-                   `carBodyId`, `fuelTypeId`)
-VALUES (1, 'Corolla', 'Toyota', 'Red', 'VIN12345ABCDE', '2020', 'ABC123', 50000, 1, 1, 1),
-       (2, 'Model S', 'Tesla', 'Black', 'VIN67890FGHIJ', '2021', 'XYZ789', 10000, 3, 4, 3),
-       (3, 'Civic', 'Honda', 'Blue', 'VIN11223KLMNO', '2019', 'LMN456', 75000, 5, 3, 1);
-
--- Таблица driver_with_car
-INSERT INTO `driver_with_car` (`id`, `timestampStart`, `timestampEnd`, `driverId`, `carId`)
-VALUES (1, 1672444800, NULL, 2, 1),
-       (2, 1672527600, NULL, 4, 2);
-
-
-INSERT INTO `car_fill_up` (`id`, `timestamp`, `latitude`, `longitude`, `price`, `carId`)
-VALUES (1, 1672531200, 40.712776, -74.005974, 50.75, 1),
-       (3, 1672704000, 48.856613, 2.352222, 55.30, 1),
-       (4, 1672790400, 51.507351, -0.127758, 45.20, 3),
-       (6, 1672963200, 37.774929, -122.419418, 65.10, 2),
-       (7, 1673049600, -33.868820, 151.209290, 75.00, 1),
-       (8, 1673136000, -22.906847, -43.172897, 40.90, 3),
-       (9, 1673222400, 55.755825, 37.617298, 50.00, 3),
-       (10, 1673308800, 52.520008, 13.404954, 45.80, 2);
-
+CREATE TABLE IF NOT EXISTS insurance
+(
+    id        INT PRIMARY KEY AUTO_INCREMENT,
+    carId     INT  NOT NULL,
+    startDate DATE NOT NULL,
+    endDate   DATE NOT NULL,
+    photoUrl  VARCHAR(255),
+    FOREIGN KEY (carId) REFERENCES car (id) ON DELETE CASCADE
+);

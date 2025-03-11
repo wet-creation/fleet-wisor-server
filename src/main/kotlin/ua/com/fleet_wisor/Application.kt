@@ -3,9 +3,8 @@ package ua.com.fleet_wisor
 import io.ktor.server.application.*
 import ua.com.fleet_wisor.db.DatabaseFactory
 import ua.com.fleet_wisor.db.car.CarRepositoryImpl
-import ua.com.fleet_wisor.db.trip.TripRepositoryImpl
-import ua.com.fleet_wisor.db.user.UserRepositoryImpl
-import ua.com.fleet_wisor.db.user.driver.DriverRepositoryImpl
+import ua.com.fleet_wisor.db.user.OwnerRepositoryImpl
+import ua.com.fleet_wisor.db.driver.DriverRepositoryImpl
 import ua.com.fleet_wisor.di.configureFrameworks
 import ua.com.fleet_wisor.minio.MinioService
 import ua.com.fleet_wisor.plugins.configureAuth
@@ -25,9 +24,8 @@ fun Application.module() {
     MinioService.init()
     configureStatusPages()
     configureRouting(
-        userRepository = UserRepositoryImpl(),
+        ownerRepository = OwnerRepositoryImpl(),
         driverRepository = DriverRepositoryImpl(),
         carRepository = CarRepositoryImpl(),
-        tripRepository = TripRepositoryImpl(),
     )
 }
