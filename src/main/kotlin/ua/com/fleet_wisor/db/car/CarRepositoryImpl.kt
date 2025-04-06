@@ -48,7 +48,7 @@ class CarRepositoryImpl : CarRepository {
                     OwnerTable.id,
                     CarFuelTypesTable.fuelTypeId,
                     FuelTypeTable.id
-                ).mapCollection(idColumn = CarTable.id, merge = ::mergeCars) {
+                ).mapCollection(pkColumn = CarTable.id, merge = ::mergeCars) {
                     it.toCar()
                 }
 

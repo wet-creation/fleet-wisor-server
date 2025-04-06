@@ -47,29 +47,10 @@ fun QueryRowSet.toDriver(): Driver {
 }
 
 fun QueryRowSet.toDriverWithCars(): DriverWithCars {
-    val t = this
-    val driver = Driver(
-        id = t[DriverTable.id]!!,
-        name = t[DriverTable.name]!!,
-        surname = t[DriverTable.surname]!!,
-        phone = t[DriverTable.phone]!!,
-        driverLicenseNumber = t[DriverTable.driverLicenseNumber]!!,
-        owner = Owner(
-            id = t[DriverTable.ownerId]!!,
-            email = t[OwnerTable.email]!!,
-            name = t[OwnerTable.name]!!,
-            surname = t[OwnerTable.surname]!!,
-            password = t[OwnerTable.password]!!,
-        ),
-        frontLicensePhotoUrl = t[DriverTable.frontLicensePhotoUrl]!!,
-        backLicensePhotoUrl = t[DriverTable.backLicensePhotoUrl]!!,
-        birthdayDate = t[DriverTable.birthday]!!.toString(),
-        salary = t[DriverTable.salary]!!,
-    )
 
     return DriverWithCars(
         cars = listOf(toDriverCar()),
-        driver = driver
+        driver = toDriver()
     )
 
 }

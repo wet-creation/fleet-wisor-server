@@ -53,14 +53,14 @@ fun <T> transactionalQuery(block: (Database) -> T): T {
 
 
 fun <K : Any, V> Query.mapCollection(
-    idColumn: Column<K>,
+    pkColumn: Column<K>,
     merge: (existing: V, newItem: V) -> V,
     transform: (QueryRowSet) -> V
 ): List<V> {
     val map = mutableMapOf<K, V>()
 
     this.forEach { row ->
-        val id = row[idColumn]!!
+        val id = row[pkColumn]!!
         val newItem = transform(row)
 
         map[id] = map[id]?.let { existing -> merge(existing, newItem) } ?: newItem

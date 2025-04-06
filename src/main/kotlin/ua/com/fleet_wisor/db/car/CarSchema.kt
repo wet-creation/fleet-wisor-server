@@ -35,13 +35,6 @@ object CarFuelTypesTable : Table<Nothing>("car_fuel_types") {
     var fuelTypeId = int("fuelTypeId").primaryKey()
 }
 
-fun QueryRowSet.toFuelTypeList(): List<FuelType> {
-    val fuelTypeList = mutableListOf<FuelType>()
-    while (this.next()) {
-        fuelTypeList.add(this.toFuelType())
-    }
-    return fuelTypeList
-}
 
 
 fun QueryRowSet.toFuelType(): FuelType {
