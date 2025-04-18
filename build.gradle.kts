@@ -32,7 +32,6 @@ repositories {
 }
 
 dependencies {
-
     testImplementation ("io.ktor:ktor-server-host-common")
     implementation("io.ktor:ktor-server-auth-jvm")
     implementation("io.ktor:ktor-server-auth-jwt")

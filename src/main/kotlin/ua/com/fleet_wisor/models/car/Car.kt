@@ -1,6 +1,7 @@
 package ua.com.fleet_wisor.models.car
 
 import kotlinx.serialization.Serializable
+import ua.com.fleet_wisor.models.driver.Driver
 import ua.com.fleet_wisor.models.user.Owner
 
 @Serializable
@@ -20,6 +21,7 @@ data class Car(
     val licensePlate: String? = null,
     val mileAge: Long = 0,
     val owner: Owner = Owner(),
+    val drivers: List<Driver> = listOf(),
     val fuelTypes: List<FuelType> = listOf(),
     val carBody: CarBody = CarBody(),
 )

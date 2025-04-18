@@ -20,6 +20,14 @@ data class LoginRequest(
     val password: String
 )
 
+@Serializable
+data class RegisterRequest(
+    val name: String,
+    val surname: String,
+    val email: String,
+    val password: String
+)
+
 
 
 fun verifyPassword(password: String, hashPassword: String): Boolean {

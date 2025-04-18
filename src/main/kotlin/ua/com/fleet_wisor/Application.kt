@@ -5,12 +5,14 @@ import ua.com.fleet_wisor.db.DatabaseFactory
 import ua.com.fleet_wisor.db.car.CarRepositoryImpl
 import ua.com.fleet_wisor.db.user.OwnerRepositoryImpl
 import ua.com.fleet_wisor.db.driver.DriverRepositoryImpl
+import ua.com.fleet_wisor.db.reports.ReportsRepositoryImpl
 import ua.com.fleet_wisor.di.configureFrameworks
 import ua.com.fleet_wisor.minio.MinioService
 import ua.com.fleet_wisor.plugins.configureAuth
 import ua.com.fleet_wisor.plugins.configureContentNegotiation
 import ua.com.fleet_wisor.plugins.configureStatusPages
 import ua.com.fleet_wisor.routes.configureRouting
+import java.time.LocalDateTime
 
 fun main(args: Array<String>) {
     io.ktor.server.netty.EngineMain.main(args)
@@ -27,5 +29,6 @@ fun Application.module() {
         ownerRepository = OwnerRepositoryImpl(),
         driverRepository = DriverRepositoryImpl(),
         carRepository = CarRepositoryImpl(),
+        reportRepository = ReportsRepositoryImpl(),
     )
 }

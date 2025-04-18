@@ -8,11 +8,13 @@ import ua.com.fleet_wisor.minio.MinioService
 import ua.com.fleet_wisor.models.user.OwnerRepository
 import ua.com.fleet_wisor.models.car.CarRepository
 import ua.com.fleet_wisor.models.driver.DriverRepository
+import ua.com.fleet_wisor.models.reports.ReportsRepository
 
 fun Application.configureRouting(
     ownerRepository: OwnerRepository,
     driverRepository: DriverRepository,
     carRepository: CarRepository,
+    reportRepository: ReportsRepository,
 ) {
     routing {
         route("/") {
@@ -25,6 +27,7 @@ fun Application.configureRouting(
             configureDriverRouting(driverRepository)
             configureCarRouting(carRepository)
             configureAuthRouting(ownerRepository)
+            configureReportRouting(reportRepository)
         }
 
         route("/image/{filename}") {

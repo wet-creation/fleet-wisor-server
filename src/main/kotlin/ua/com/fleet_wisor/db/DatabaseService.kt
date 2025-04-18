@@ -36,7 +36,7 @@ object DatabaseFactory {
         val config = HikariConfig()
         config.driverClassName = "com.mysql.cj.jdbc.Driver"
         config.jdbcUrl = dbUrl
-        config.maximumPoolSize = 3
+        config.maximumPoolSize = 5
         config.isAutoCommit = false
         config.username = dbUser
         config.password = dbPassword
@@ -49,6 +49,9 @@ object DatabaseFactory {
 
 fun <T> transactionalQuery(block: (Database) -> T): T {
     return DatabaseFactory.database.useTransaction { block(DatabaseFactory.database) }
+}
+fun <T> useConnection(block: (Database) -> T): T {
+    return DatabaseFactory.database.useConnection { block(DatabaseFactory.database) }
 }
 
 

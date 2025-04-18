@@ -32,23 +32,57 @@ fun Route.configureAuthRouting(
             )
 
         }
+        post("/register") {
+            val request = call.receive<RegisterRequest>()
 
-        post("/refresh") {
-            val request = call.receive<JwtRefreshRequest>()
-            if (!JWTConfig.refreshTokens.containsValue(request.jwtRefreshToken)) {
-                call.respond(HttpStatusCode.Unauthorized, "Invalid refresh token")
-                return@post
+            val user = ownerRepository.findByEmail(request.email)
+            if (user != null) {
+                call.respond(HttpStatusCode.Conflict, "Email already in use")
             }
-
-            val id = JWTConfig.getUserIdFromToken(request.jwtRefreshToken)
-                ?: throw IllegalArgumentException("invalid refresh token")
-            val jwtRefresh = JWTConfig.generateRefreshToken(id)
-            val jwtAccess = JWTConfig.generateAccessToken(id)
-            JWTConfig.refreshTokens[id] = jwtRefresh
-            call.respond(HttpStatusCode.OK, JwtTokenResponse(jwtAccess, jwtRefresh))
-
+            val hashPassword = hashPassword(request.password)
+            val userWithHashPassword = OwnerCreate(
+                email = request.email,
+                password = hashPassword,
+                name = request.name,
+                surname = request.surname,
+            )
+            ownerRepository.create(userWithHashPassword)
+            call.respond(HttpStatusCode.Created)
 
         }
-    }
 
+
+        route("/update") {
+            post("/refresh") {
+                val request = call.receive<JwtRefreshRequest>()
+                if (!JWTConfig.refreshTokens.containsValue(request.jwtRefreshToken)) {
+                    call.respond(HttpStatusCode.Unauthorized, "Invalid refresh token")
+                    return@post
+                }
+
+                val id = JWTConfig.getUserIdFromToken(request.jwtRefreshToken)
+                    ?: throw IllegalArgumentException("invalid refresh token")
+                val jwtRefresh = JWTConfig.generateRefreshToken(id)
+                val jwtAccess = JWTConfig.generateAccessToken(id)
+                JWTConfig.refreshTokens[id] = jwtRefresh
+                call.respond(HttpStatusCode.OK, JwtTokenResponse(jwtAccess, jwtRefresh))
+
+
+            }
+            post("/access") {
+                val request = call.receive<JwtRefreshRequest>()
+                if (!JWTConfig.refreshTokens.containsValue(request.jwtRefreshToken)) {
+                    call.respond(HttpStatusCode.Unauthorized, "Invalid refresh token")
+                    return@post
+                }
+
+                val id = JWTConfig.getUserIdFromToken(request.jwtRefreshToken)
+                    ?: throw IllegalArgumentException("invalid refresh token")
+                val jwtAccess = JWTConfig.generateAccessToken(id)
+                call.respond(HttpStatusCode.OK, JwtTokenResponse(jwtAccess, request.jwtRefreshToken))
+
+
+            }
+        }
+    }
 }

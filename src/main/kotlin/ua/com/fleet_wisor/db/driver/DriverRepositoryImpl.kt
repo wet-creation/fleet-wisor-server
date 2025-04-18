@@ -7,6 +7,7 @@ import ua.com.fleet_wisor.db.car.CarTable
 import ua.com.fleet_wisor.db.car.FuelTypeTable
 import ua.com.fleet_wisor.db.mapCollection
 import ua.com.fleet_wisor.db.transactionalQuery
+import ua.com.fleet_wisor.db.useConnection
 import ua.com.fleet_wisor.db.user.OwnerTable
 import ua.com.fleet_wisor.models.car.Car
 import ua.com.fleet_wisor.models.driver.*
@@ -38,7 +39,7 @@ class DriverRepositoryImpl : DriverRepository {
 
 
     override suspend fun findByPhone(phone: String): Driver? {
-        return transactionalQuery { database ->
+        return useConnection { database ->
             database.from(DriverTable).innerJoin(OwnerTable, OwnerTable.id eq DriverTable.ownerId).select()
                 .where { DriverTable.phone eq phone }.map {
                     it.toDriver()
@@ -48,7 +49,7 @@ class DriverRepositoryImpl : DriverRepository {
     }
 
     override suspend fun all(): List<Driver> {
-        return transactionalQuery { database ->
+        return useConnection { database ->
             database.from(DriverTable).innerJoin(OwnerTable, OwnerTable.id eq DriverTable.ownerId)
                 .select()
                 .map { it.toDriver() }
@@ -57,7 +58,7 @@ class DriverRepositoryImpl : DriverRepository {
     }
 
     override suspend fun driverWithCars(): List<DriverWithCars> {
-        return transactionalQuery { database ->
+        return useConnection { database ->
             database.from(DriverTable)
                 .innerJoin(OwnerTable, OwnerTable.id eq DriverTable.ownerId)
                 .innerJoin(DriverWithCarTable, DriverWithCarTable.driverId eq DriverTable.id)
@@ -76,7 +77,7 @@ class DriverRepositoryImpl : DriverRepository {
     }
 
     override suspend fun findById(id: Int): Driver? {
-        return transactionalQuery { database ->
+        return useConnection { database ->
             database.from(DriverTable).select().where { DriverTable.id eq id }
                 .map { it.toDriver() }.firstOrNull()
         }
