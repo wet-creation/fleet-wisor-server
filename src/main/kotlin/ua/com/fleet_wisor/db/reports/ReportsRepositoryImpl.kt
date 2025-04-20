@@ -1,5 +1,8 @@
 package ua.com.fleet_wisor.db.reports
 
+import org.apache.commons.io.output.ByteArrayOutputStream
+import org.apache.poi.ss.usermodel.Row
+import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import ua.com.fleet_wisor.db.DatabaseFactory.database
 import ua.com.fleet_wisor.models.reports.CarPeriodReport
 import ua.com.fleet_wisor.models.reports.ReportsRepository
@@ -69,5 +72,38 @@ class ReportsRepositoryImpl : ReportsRepository {
             }
         }
         return list
+    }
+
+    override fun mainReportExcel(reports: List<CarPeriodReport>): ByteArray {
+        val workbook = XSSFWorkbook()
+        val sheet = workbook.createSheet("Report")
+
+        val header: Row = sheet.createRow(0)
+        header.createCell(0).setCellValue("ID")
+        header.createCell(1).setCellValue("Колів")
+        header.createCell(2).setCellValue("Назва Бренду")
+        header.createCell(3).setCellValue("Модель")
+        header.createCell(4).setCellValue("К-сть заправок")
+        header.createCell(5).setCellValue("Вартість заправок")
+        header.createCell(6).setCellValue("К-сть обслуговувань")
+        header.createCell(7).setCellValue("Вартість обслуговувань")
+
+        reports.forEachIndexed { index, driver ->
+            val row = sheet.createRow(index + 1)
+            row.createCell(0).setCellValue(driver.id.toDouble())
+            row.createCell(1).setCellValue(driver.color)
+            row.createCell(2).setCellValue(driver.brandName)
+            row.createCell(3).setCellValue(driver.model)
+            row.createCell(4).setCellValue(driver.fillUpCount.toDouble())
+            row.createCell(5).setCellValue(driver.totalFillUp)
+            row.createCell(6).setCellValue(driver.maintenanceCount.toDouble())
+            row.createCell(7).setCellValue(driver.totalMaintenance)
+        }
+
+        val outputStream = ByteArrayOutputStream()
+        workbook.write(outputStream)
+        workbook.close()
+
+        return outputStream.toByteArray()
     }
 }

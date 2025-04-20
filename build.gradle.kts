@@ -56,7 +56,8 @@ dependencies {
     implementation("org.ktorm:ktorm-core:$ktorm_version")
     implementation("at.favre.lib:bcrypt:$bcrypt_version")
     implementation("io.minio:minio:8.5.17")
-
+    implementation("org.apache.poi:poi:5.2.3")
+    implementation("org.apache.poi:poi-ooxml:5.2.3")
 
 
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")

@@ -4,4 +4,5 @@ import java.time.LocalDateTime
 
 interface ReportsRepository {
     fun mainReport(startDateTime: LocalDateTime, endDateTime: LocalDateTime, ownerId: Int): List<CarPeriodReport>
+    fun mainReportExcel(reports: List<CarPeriodReport>): ByteArray
 }

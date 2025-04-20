@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 data class CarPeriodReport(
     val id: Int,
     val color: String?,
-    val brandName: String?,
+    val brandName: String,
     val model: String?,
     val fillUpCount: Int,
     val totalFillUp: Double,

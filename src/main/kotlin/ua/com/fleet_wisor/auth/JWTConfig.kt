@@ -10,7 +10,7 @@ object JWTConfig {
     private val secret = getConfig("JWT_SECRET")
     private val issuer = getConfig("ISSUER")
     private val audience = getConfig("AUDIENCE")
-    private const val AccessTokenValidity = 30L
+    private const val AccessTokenValidity = 30L * 60
     private const val RefreshTokenValidity = 7 * 24 * 60 * 60 * 1000L
 
     val refreshTokens = mutableMapOf<String, String>()
