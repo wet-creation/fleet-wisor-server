@@ -54,13 +54,13 @@ fun Route.configureAuthRouting(
 
         route("/update") {
             post("/refresh") {
-                val request = call.receive<JwtRefreshRequest>()
-                if (!JWTConfig.refreshTokens.containsValue(request.jwtRefreshToken)) {
+                val jwtRefreshToken = call.receive<JwtRefreshRequest>().jwtRefreshToken
+                if (!JWTConfig.refreshTokens.containsValue(jwtRefreshToken)) {
                     call.respond(HttpStatusCode.Unauthorized, "Invalid refresh token")
                     return@post
                 }
 
-                val id = JWTConfig.getUserIdFromToken(request.jwtRefreshToken)
+                val id = JWTConfig.getUserIdFromToken(jwtRefreshToken, false)
                     ?: throw IllegalArgumentException("invalid refresh token")
                 val jwtRefresh = JWTConfig.generateRefreshToken(id)
                 val jwtAccess = JWTConfig.generateAccessToken(id)
@@ -76,7 +76,7 @@ fun Route.configureAuthRouting(
                     return@post
                 }
 
-                val id = JWTConfig.getUserIdFromToken(request.jwtRefreshToken)
+                val id = JWTConfig.getUserIdFromToken(request.jwtRefreshToken, false)
                     ?: throw IllegalArgumentException("invalid refresh token")
                 val jwtAccess = JWTConfig.generateAccessToken(id)
                 call.respond(HttpStatusCode.OK, JwtTokenResponse(jwtAccess, request.jwtRefreshToken))

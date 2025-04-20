@@ -10,7 +10,7 @@ object JWTConfig {
     private val secret = getConfig("JWT_SECRET")
     private val issuer = getConfig("ISSUER")
     private val audience = getConfig("AUDIENCE")
-    private const val AccessTokenValidity = 30000L
+    private const val AccessTokenValidity = 30L
     private const val RefreshTokenValidity = 7 * 24 * 60 * 60 * 1000L
 
     val refreshTokens = mutableMapOf<String, String>()
@@ -22,7 +22,8 @@ object JWTConfig {
             .withIssuer(issuer)
             .withAudience(audience)
             .withClaim("userId", userId)
-            .withExpiresAt(Instant.now().plusMillis(AccessTokenValidity))
+            .withClaim("type", "access_token")
+            .withExpiresAt(Instant.now().plusSeconds(AccessTokenValidity))
             .sign(algorithm)
     }
 
@@ -31,18 +32,26 @@ object JWTConfig {
             .withIssuer(issuer)
             .withAudience(audience)
             .withClaim("userId", userId)
+            .withClaim("type", "refresh_token")
             .withExpiresAt(Instant.now().plusMillis(RefreshTokenValidity))
             .sign(algorithm)
     }
 
-    fun getUserIdFromToken(token: String): String? {
-        val decodedJWT = verifyToken().verify(token)
+    fun getUserIdFromToken(token: String, isAccess: Boolean): String? {
+        val decodedJWT = if (isAccess) verifyAccessToken().verify(token) else verifyRefreshToken().verify(token)
         return decodedJWT.getClaim("userId").asString()
     }
 
-    fun verifyToken(): JWTVerifier = JWT.require(algorithm)
+    fun verifyAccessToken(): JWTVerifier = JWT.require(algorithm)
         .withIssuer(issuer)
         .withAudience(audience)
+        .withClaim("type", "access_token")
+        .build()
+
+    private fun verifyRefreshToken(): JWTVerifier = JWT.require(algorithm)
+        .withIssuer(issuer)
+        .withAudience(audience)
+        .withClaim("type", "refresh_token")
         .build()
 
 

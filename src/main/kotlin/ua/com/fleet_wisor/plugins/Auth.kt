@@ -11,7 +11,7 @@ fun Application.configureAuth() {
     install(Authentication) {
         jwt {
             realm = "Ktor Server"
-            verifier(JWTConfig.verifyToken())
+            verifier(JWTConfig.verifyAccessToken())
             validate { credentials ->
                 if (credentials.payload.getClaim("userId").asString() != "") {
                     UserIdPrincipal(credentials.payload.getClaim("userId").asString())

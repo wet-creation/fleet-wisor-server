@@ -51,6 +51,8 @@ dependencies {
     implementation("io.ktor:ktor-server-netty-jvm")
     implementation("ch.qos.logback:logback-classic:$logback_version")
 
+    implementation("io.ktor:ktor-server-call-logging")
+
     implementation("org.ktorm:ktorm-core:$ktorm_version")
     implementation("at.favre.lib:bcrypt:$bcrypt_version")
     implementation("io.minio:minio:8.5.17")

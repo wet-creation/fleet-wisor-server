@@ -6,13 +6,12 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import ua.com.fleet_wisor.models.reports.ReportsRepository
 import java.time.LocalDate
-import java.time.LocalDateTime
 
 fun Route.configureReportRouting(
     reportsRepository: ReportsRepository,
 ) {
-        route("/reports") {
-            authenticate {
+    route("/reports") {
+        authenticate {
             get {
                 val id = call.principal<UserIdPrincipal>()?.name ?: throw IllegalArgumentException("Invalid")
                 println(id)
