@@ -27,16 +27,27 @@ class OwnerRepositoryImpl : OwnerRepository {
         }
     }
 
-
-    override suspend fun update(owner: Owner): Owner? {
+    override suspend fun updatePassword(ownerId: Int, newPassword: String) {
         return transactionalQuery { database ->
             database.update(OwnerTable) {
-                set(it.name, owner.surname)
+                set(it.password, newPassword)
+                where { OwnerTable.id eq ownerId }
+            }
+
+        }
+    }
+
+
+    override suspend fun updateInfo(owner: OwnerNoPassword): OwnerNoPassword? {
+        return transactionalQuery { database ->
+            database.update(OwnerTable) {
+                set(it.name, owner.name)
                 set(it.surname, owner.surname)
+                set(it.email, owner.email)
                 where { OwnerTable.id eq owner.id }
             }
 
-            database.from(OwnerTable).select().where { OwnerTable.id eq owner.id }.map { it.toUser() }
+            database.from(OwnerTable).select().where { OwnerTable.id eq owner.id }.map { it.toUser().asOwnerNoPassword() }
                 .firstOrNull()
         }
     }

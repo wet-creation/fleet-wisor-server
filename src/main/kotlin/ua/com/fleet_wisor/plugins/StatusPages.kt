@@ -19,5 +19,8 @@ fun Application.configureStatusPages() {
         exception<IllegalArgumentException> { call, cause ->
             call.respondText(text = "400: ${cause.message}" , status = HttpStatusCode.BadRequest)
         }
+        exception<BadRequestException> { call, cause ->
+            call.respondText(text = "400: ${cause.message}", status = HttpStatusCode.BadRequest)
+        }
     }
 }

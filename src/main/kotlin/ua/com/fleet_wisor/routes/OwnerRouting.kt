@@ -6,8 +6,7 @@ import io.ktor.server.plugins.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import ua.com.fleet_wisor.models.user.Owner
-import ua.com.fleet_wisor.models.user.OwnerRepository
+import ua.com.fleet_wisor.models.user.*
 import ua.com.fleet_wisor.utils.notFoundMessage
 
 fun Route.configureOwnerRouting(
@@ -35,7 +34,7 @@ fun Route.configureOwnerRouting(
                             "User not found"
                         )
                     )
-                )?: throw NotFoundException(notFoundMessage(Owner::class, id, "User not found"))
+                ) ?: throw NotFoundException(notFoundMessage(Owner::class, id, "User not found"))
 
                 call.respond(HttpStatusCode.OK, owner)
 
@@ -44,20 +43,31 @@ fun Route.configureOwnerRouting(
                 val user = ownerRepository.all()
                 call.respond(HttpStatusCode.OK, user)
             }
+            route("/update") {
+                put("/info") {
+                    val owner = call.receive<OwnerNoPassword>()
+                    val res = ownerRepository.updateInfo(owner)
+                        ?: throw NotFoundException(notFoundMessage(Owner::class, owner.id, "Check your id"))
+                    call.respond(HttpStatusCode.OK, res)
+                }
+                put("/password") {
+                    val id = call.principal<UserIdPrincipal>()?.name?.toIntOrNull()
+                        ?: throw IllegalArgumentException("Invalid")
+                    val body = call.receive<PasswordUpdate>()
 
-            put {
-                val owner = call.receive<Owner>()
-                val res = ownerRepository.update(owner)
-                    ?: throw NotFoundException(notFoundMessage(Owner::class, owner.id, "Check your id"))
-                call.respond(HttpStatusCode.OK, res)
+                    val owner = ownerRepository.findById(id)
+                        ?: throw NotFoundException(notFoundMessage(Owner::class, id, "User not found"))
+
+                    if (!verifyPassword(body.oldPassword, owner.password)) throw BadRequestException("Passwords do not match")
+
+                    val res = ownerRepository.updatePassword(
+                        ownerId = id,
+                        newPassword = hashPassword(body.newPassword)
+                    )
+                    call.respond(HttpStatusCode.OK, res)
+                }
             }
 
-            delete("/{id}") {
-                val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
-                if (ownerRepository.delete(id))
-                    call.respond(HttpStatusCode.OK)
-                else throw NotFoundException(notFoundMessage(Owner::class, id, "Check your id"))
-            }
 
         }
 
