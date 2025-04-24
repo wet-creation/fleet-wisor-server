@@ -33,7 +33,6 @@ data class DriverCreate(
 )
 @Serializable
 data class DriverCreateApi(
-    val ownerId: Int,
     val name: String,
     val surname: String,
     val phone: String,

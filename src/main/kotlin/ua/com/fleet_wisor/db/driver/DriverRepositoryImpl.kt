@@ -11,7 +11,6 @@ import ua.com.fleet_wisor.db.useConnection
 import ua.com.fleet_wisor.db.user.OwnerTable
 import ua.com.fleet_wisor.models.car.Car
 import ua.com.fleet_wisor.models.driver.*
-import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -48,10 +47,11 @@ class DriverRepositoryImpl : DriverRepository {
 
     }
 
-    override suspend fun all(): List<Driver> {
+    override suspend fun all(ownerId: Int): List<Driver> {
         return useConnection { database ->
             database.from(DriverTable).innerJoin(OwnerTable, OwnerTable.id eq DriverTable.ownerId)
                 .select()
+                .where { DriverTable.ownerId eq ownerId }
                 .map { it.toDriver() }
         }
 
@@ -99,7 +99,7 @@ class DriverRepositoryImpl : DriverRepository {
                 set(DriverTable.phone, driver.phone)
                 set(DriverTable.driverLicenseNumber, driver.driverLicenseNumber)
                 set(DriverTable.salary, driver.salary)
-                set(DriverTable.birthday, LocalDate.from(Instant.parse(driver.birthdayDate)))
+                set(DriverTable.birthday, LocalDate.parse(driver.birthdayDate))
                 set(DriverTable.name, driver.name)
                 set(DriverTable.surname, driver.surname)
                 set(DriverTable.frontLicensePhotoUrl, driver.frontLicensePhotoUrl)
