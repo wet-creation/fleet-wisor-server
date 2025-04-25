@@ -16,9 +16,9 @@ fun Application.configureStatusPages() {
         exception<NotFoundException> { call, cause ->
             call.respondText(text = "404: ${cause.message}" , status = HttpStatusCode.NotFound)
         }
-        exception<IllegalArgumentException> { call, cause ->
-            call.respondText(text = "400: ${cause.message}" , status = HttpStatusCode.BadRequest)
-        }
+//        exception<IllegalArgumentException> { call, cause ->
+//            call.respondText(text = "400: ${cause.message}" , status = HttpStatusCode.BadRequest)
+//        }
         exception<BadRequestException> { call, cause ->
             call.respondText(text = "400: ${cause.message}", status = HttpStatusCode.BadRequest)
         }

@@ -17,7 +17,15 @@ data class Driver(
     val salary: Double,
 )
 
-
+@Serializable
+data class DriverEdit(
+    val name: String,
+    val surname: String,
+    val phone: String,
+    val driverLicenseNumber: String,
+    val birthdayDate: String,
+    val salary: Double,
+)
 
 @Serializable
 data class DriverCreate(
@@ -31,6 +39,7 @@ data class DriverCreate(
     val birthdayDate: String,
     val salary: Double,
 )
+
 @Serializable
 data class DriverCreateApi(
     val name: String,

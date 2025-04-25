@@ -78,18 +78,35 @@ class DriverRepositoryImpl : DriverRepository {
 
     override suspend fun findById(id: Int): Driver? {
         return useConnection { database ->
-            database.from(DriverTable).select().where { DriverTable.id eq id }
+            database.from(DriverTable).innerJoin(OwnerTable, OwnerTable.id eq DriverTable.ownerId).select()
+                .where { DriverTable.id eq id }
                 .map { it.toDriver() }.firstOrNull()
         }
 
     }
 
     override suspend fun update(driver: Driver): Driver? {
-        TODO("Not yet implemented")
+        return transactionalQuery { database ->
+            database.update(DriverTable) {
+                set(it.name, driver.name)
+                set(it.surname, driver.surname)
+                set(it.phone, driver.phone)
+                set(it.salary, driver.salary)
+                set(it.backLicensePhotoUrl, driver.backLicensePhotoUrl)
+                set(it.frontLicensePhotoUrl, driver.frontLicensePhotoUrl)
+                set(it.birthday, LocalDate.parse(driver.birthdayDate))
+                where { DriverTable.id eq driver.id }
+            }
+            findById(driver.id)
+        }
     }
 
     override suspend fun delete(id: Int): Boolean {
-        TODO("Not yet implemented")
+        return transactionalQuery { database ->
+            database.delete(DriverTable) {
+                DriverTable.id eq id
+            } > 0
+        }
     }
 
     override suspend fun create(driver: DriverCreate) {
@@ -113,7 +130,7 @@ class DriverRepositoryImpl : DriverRepository {
     }
 }
 
-fun assignCarToDriver(driverWithCarCreate: DriverWithCarCreate) {
+suspend fun assignCarToDriver(driverWithCarCreate: DriverWithCarCreate) {
     transactionalQuery { database ->
         database.insert(DriverWithCarTable) {
             set(DriverWithCarTable.carId, driverWithCarCreate.carId)

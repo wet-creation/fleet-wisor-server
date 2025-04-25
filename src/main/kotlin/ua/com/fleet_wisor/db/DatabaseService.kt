@@ -2,6 +2,8 @@ package ua.com.fleet_wisor.db
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.flywaydb.core.Flyway
 import org.ktorm.database.Database
 import org.ktorm.dsl.Query
@@ -47,9 +49,10 @@ object DatabaseFactory {
 }
 
 
-fun <T> transactionalQuery(block: (Database) -> T): T {
-    return DatabaseFactory.database.useTransaction { block(DatabaseFactory.database) }
+suspend fun <T> transactionalQuery(block: suspend (Database) -> T): T {
+    return withContext(Dispatchers.IO) { DatabaseFactory.database.useTransaction { block(DatabaseFactory.database) } }
 }
+
 fun <T> useConnection(block: (Database) -> T): T {
     return DatabaseFactory.database.useConnection { block(DatabaseFactory.database) }
 }

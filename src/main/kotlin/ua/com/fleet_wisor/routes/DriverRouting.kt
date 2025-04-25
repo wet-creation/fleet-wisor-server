@@ -12,6 +12,7 @@ import io.ktor.utils.io.streams.*
 import kotlinx.serialization.json.Json
 import ua.com.fleet_wisor.minio.MinioService
 import ua.com.fleet_wisor.models.driver.*
+import ua.com.fleet_wisor.models.user.Owner
 import ua.com.fleet_wisor.utils.notFoundMessage
 
 fun Route.configureDriverRouting(
@@ -100,11 +101,105 @@ fun Route.configureDriverRouting(
                 call.respond(HttpStatusCode.OK, user)
             }
 
-            put {
+            put("/{id}") {
+                println("HEEEEELLLLLOOOOOO)))))")
+                val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
+                val ownerId =
+                    call.principal<UserIdPrincipal>()?.name?.toIntOrNull() ?: throw IllegalArgumentException("Invalid")
+                val driver = driverRepository.findById(id) ?: throw NotFoundException(
+                    notFoundMessage(
+                        Driver::class,
+                        id,
+                        "Check your id"
+                    )
+                )
+                if (driver.owner.id != ownerId) throw throw IllegalArgumentException("Invalid ID")
 
+                val multiPart = call.receiveMultipart()
+                var frontPhotoName = ""
+                var backPhotoName = ""
+                var res: Driver? = null
+                multiPart.forEachPart { part ->
+                    when (part.name) {
+                        "frontPhoto" -> {
+                            part as PartData.FileItem
+                            if (driver.frontLicensePhotoUrl != "")
+                                MinioService.remove(driver.frontLicensePhotoUrl)
+                            val contentType = part.contentType?.toString() ?: "application/octet-stream"
+                            frontPhotoName = MinioService.uploadPhotoToMinio(
+                                inputStream = part.provider().readBuffer().inputStream(),
+                                contentType = contentType,
+                            )
+
+                        }
+
+                        "backPhoto" -> {
+                            part as PartData.FileItem
+                            if (driver.backLicensePhotoUrl != "")
+                                MinioService.remove(driver.backLicensePhotoUrl)
+                            val contentType = part.contentType?.toString() ?: "application/octet-stream"
+                            backPhotoName = MinioService.uploadPhotoToMinio(
+                                inputStream = part.provider().readBuffer().inputStream(),
+                                contentType = contentType,
+                            )
+
+                        }
+
+                        "body" -> {
+                            part as PartData.FormItem
+                            val jsonBody = part.value
+                            val driverApi = Json.decodeFromString<DriverEdit>(jsonBody)
+                            val driverEdit = Driver(
+                                id = driver.id,
+                                name = driverApi.name,
+                                owner = Owner(),
+                                surname = driverApi.surname,
+                                phone = driverApi.phone,
+                                driverLicenseNumber = driverApi.driverLicenseNumber,
+                                frontLicensePhotoUrl = if (frontPhotoName == "") driver.frontLicensePhotoUrl else frontPhotoName,
+                                backLicensePhotoUrl = if (backPhotoName == "") driver.backLicensePhotoUrl else backPhotoName,
+                                birthdayDate = driverApi.birthdayDate,
+                                salary = driverApi.salary
+                            )
+                            res = driverRepository.update(driverEdit)
+                        }
+
+                        else -> {
+                            call.respond(HttpStatusCode.BadRequest)
+                        }
+                    }
+                    part.dispose()
+                }
+                if (res != null) call.respond(HttpStatusCode.OK, res!!) else call.respond(HttpStatusCode.BadRequest)
             }
 
             delete("/{id}") {
+                val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
+                val ownerId =
+                    call.principal<UserIdPrincipal>()?.name?.toIntOrNull() ?: throw IllegalArgumentException("Invalid")
+                val driver = driverRepository.findById(id) ?: throw NotFoundException(
+                    notFoundMessage(
+                        Driver::class,
+                        id,
+                        "Check your id"
+                    )
+                )
+                if (driver.owner.id != ownerId) throw NotFoundException(
+                    notFoundMessage(
+                        Driver::class,
+                        ownerId,
+                        "Check your owner"
+                    )
+                )
+                if (driver.frontLicensePhotoUrl != "")
+                    MinioService.remove(driver.frontLicensePhotoUrl)
+                if (driver.backLicensePhotoUrl != "")
+                    MinioService.remove(driver.backLicensePhotoUrl)
+                val res = driverRepository.delete(id)
+                if (res)
+                    call.respond(HttpStatusCode.OK)
+                else
+                    call.respond(HttpStatusCode.ServiceUnavailable)
 
             }
         }
