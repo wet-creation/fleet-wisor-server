@@ -8,6 +8,7 @@ data class CarFillUp(
     val id: Int,
     val time: String,
     val price: Double,
+    val amount: Double,
     val checkUrl: String,
     val car: Car
 )

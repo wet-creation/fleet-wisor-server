@@ -71,6 +71,7 @@ CREATE TABLE IF NOT EXISTS car_fill_up
     carId    INT      NOT NULL,
     time     DATETIME NOT NULL,
     price    FLOAT(8) NOT NULL,
+    amount    FLOAT(8) NOT NULL,
     checkUrl VARCHAR(255),
     FOREIGN KEY (carId) REFERENCES car (id) ON DELETE CASCADE
 );

@@ -10,6 +10,7 @@ object CarFillUpTable : Table<Nothing>("car_fill_up") {
     var time = datetime("time")
     var checkUrl = varchar("checkUrl")
     var price = double("price")
+    var amount = double("amount")
     var carId = int("carId")
 
 }
@@ -20,6 +21,7 @@ fun QueryRowSet.toFillUp(): CarFillUp {
         id = t[CarFillUpTable.id]!!,
         time = t[CarFillUpTable.time].toString(),
         price = t[CarFillUpTable.price]!!,
+        amount = t[CarFillUpTable.amount]!!,
         car = toCar(),
         checkUrl = t[CarFillUpTable.checkUrl]!!,
     )
