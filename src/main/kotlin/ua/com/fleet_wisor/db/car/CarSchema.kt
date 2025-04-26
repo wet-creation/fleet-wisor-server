@@ -5,6 +5,7 @@ import org.ktorm.schema.Table
 import org.ktorm.schema.int
 import org.ktorm.schema.long
 import org.ktorm.schema.varchar
+import ua.com.fleet_wisor.db.driver.toLeftJoinDriver
 import ua.com.fleet_wisor.db.user.toUser
 import ua.com.fleet_wisor.models.car.Car
 import ua.com.fleet_wisor.models.car.CarBody
@@ -36,13 +37,19 @@ object CarFuelTypesTable : Table<Nothing>("car_fuel_types") {
 }
 
 
-
 fun QueryRowSet.toFuelType(): FuelType {
     val t = this
     return FuelType(
         id = t[FuelTypeTable.id]!!,
         name = t[FuelTypeTable.name]!!,
     )
+}
+
+fun QueryRowSet.toLeftJoinFuelType(): FuelType? {
+    val t = this
+    if (t[FuelTypeTable.id] == null)
+        return null
+    return toFuelType()
 }
 
 
@@ -63,7 +70,8 @@ fun QueryRowSet.toCar(): Car {
     val row = this
     val carId = row[CarTable.id]!!
 
-    val fuelType = row.toFuelType()
+    val fuelType = row.toLeftJoinFuelType()
+    val driver = row.toLeftJoinDriver()
 
     val car = Car(
         id = carId,
@@ -74,8 +82,9 @@ fun QueryRowSet.toCar(): Car {
         licensePlate = row[CarTable.licensePlate],
         mileAge = row[CarTable.mileAge]!!,
         owner = row.toUser(),
+        drivers = if (driver != null) mutableListOf(driver) else emptyList(),
         carBody = row.toCarBody(),
-        fuelTypes = mutableListOf(fuelType),
+        fuelTypes = if (fuelType != null) mutableListOf(fuelType) else emptyList(),
     )
 
     return car

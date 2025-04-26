@@ -3,11 +3,10 @@ package ua.com.fleet_wisor.db.driver
 import org.ktorm.dsl.QueryRowSet
 import org.ktorm.schema.*
 import ua.com.fleet_wisor.db.car.toCar
-import ua.com.fleet_wisor.db.user.OwnerTable
+import ua.com.fleet_wisor.db.user.toUser
 import ua.com.fleet_wisor.models.driver.Driver
 import ua.com.fleet_wisor.models.driver.DriverCar
 import ua.com.fleet_wisor.models.driver.DriverWithCars
-import ua.com.fleet_wisor.models.user.Owner
 
 
 object DriverTable : Table<Nothing>("driver") {
@@ -24,6 +23,12 @@ object DriverTable : Table<Nothing>("driver") {
 
 }
 
+fun QueryRowSet.toLeftJoinDriver(): Driver? {
+    val t = this
+    if (t[DriverTable.id] == null)
+        return null
+    return toDriver()
+}
 fun QueryRowSet.toDriver(): Driver {
     val t = this
     return Driver(
@@ -32,19 +37,15 @@ fun QueryRowSet.toDriver(): Driver {
         surname = t[DriverTable.surname]!!,
         phone = t[DriverTable.phone]!!,
         driverLicenseNumber = t[DriverTable.driverLicenseNumber]!!,
-        owner = Owner(
-            id = t[DriverTable.ownerId]!!,
-            email = t[OwnerTable.email]!!,
-            name = t[OwnerTable.name]!!,
-            surname = t[OwnerTable.surname]!!,
-            password = t[OwnerTable.password]!!,
-        ),
+        owner = t.toUser(),
         frontLicensePhotoUrl = t[DriverTable.frontLicensePhotoUrl]!!,
         backLicensePhotoUrl = t[DriverTable.backLicensePhotoUrl]!!,
         birthdayDate = t[DriverTable.birthday]!!.toString(),
         salary = t[DriverTable.salary]!!,
     )
 }
+
+
 
 fun QueryRowSet.toDriverWithCars(): DriverWithCars {
 

@@ -8,7 +8,7 @@ import ua.com.fleet_wisor.models.user.Owner
 data class CarBody(val id: Int = -1, val name: String = "")
 
 @Serializable
-data class FuelType(val id: Int, val name: String)
+data class FuelType(val id: Int = -1, val name: String = "")
 
 
 @Serializable

@@ -18,7 +18,10 @@ import java.time.LocalDateTime
 class CarRepositoryImpl : CarRepository {
 
     private fun mergeCars(existing: Car, newCar: Car): Car {
-        return existing.copy(fuelTypes = existing.fuelTypes + newCar.fuelTypes)
+        return existing.copy(
+            fuelTypes = existing.fuelTypes + newCar.fuelTypes,
+            drivers = existing.drivers + newCar.drivers
+        )
     }
 
     private fun mergeMaintenance(old: Maintenance, new: Maintenance): Maintenance {
@@ -33,14 +36,17 @@ class CarRepositoryImpl : CarRepository {
         return existing.copy(car = mergeCars(existing.car, new.car))
     }
 
-    override suspend fun all(): List<Car> {
+    override suspend fun all(ownerId: Int): List<Car> {
         return useConnection { database ->
             database.buildAllCars()
+                .where { CarTable.ownerId eq ownerId }
                 .groupBy(
                     CarTable.id,
                     CarFuelTypesTable.carId,
                     CarBodyTable.id,
                     OwnerTable.id,
+                    DriverWithCarTable.id,
+                    DriverWithCarTable.carId,
                     CarFuelTypesTable.fuelTypeId,
                     FuelTypeTable.id
                 ).mapCollection(pkColumn = CarTable.id, merge = ::mergeCars) {
@@ -54,16 +60,17 @@ class CarRepositoryImpl : CarRepository {
     private fun Database.buildAllCars(): Query {
         return this.from(CarTable)
             .innerJoin(CarBodyTable, CarTable.carBodyId eq CarBodyTable.id)
-            .innerJoin(
+            .leftJoin(
                 CarFuelTypesTable, CarFuelTypesTable.carId eq CarTable.id
             )
-            .innerJoin(
+            .leftJoin(
                 FuelTypeTable, FuelTypeTable.id eq CarFuelTypesTable.fuelTypeId
             )
             .innerJoin(
                 OwnerTable, OwnerTable.id eq CarTable.ownerId
             )
-            .innerJoin(
+            .leftJoin(DriverWithCarTable, CarTable.id eq DriverWithCarTable.carId)
+            .leftJoin(
                 DriverTable, DriverTable.id eq DriverWithCarTable.driverId
             ).select()
     }

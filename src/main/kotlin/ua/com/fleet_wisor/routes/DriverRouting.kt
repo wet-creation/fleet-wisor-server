@@ -102,7 +102,6 @@ fun Route.configureDriverRouting(
             }
 
             put("/{id}") {
-                println("HEEEEELLLLLOOOOOO)))))")
                 val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
                 val ownerId =
                     call.principal<UserIdPrincipal>()?.name?.toIntOrNull() ?: throw IllegalArgumentException("Invalid")

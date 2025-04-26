@@ -4,7 +4,7 @@ import ua.com.fleet_wisor.models.driver.DriverWithCarCreate
 
 interface CarRepository {
 
-    suspend fun all(): List<Car>
+    suspend fun all(ownerId: Int): List<Car>
     suspend fun findById(id: Int): Car?
     suspend fun update(car: Car): Car?
     suspend fun delete(id: Int): Boolean
