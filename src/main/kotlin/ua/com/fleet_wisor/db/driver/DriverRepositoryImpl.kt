@@ -11,6 +11,7 @@ import ua.com.fleet_wisor.db.useConnection
 import ua.com.fleet_wisor.db.user.OwnerTable
 import ua.com.fleet_wisor.models.car.Car
 import ua.com.fleet_wisor.models.driver.*
+import ua.com.fleet_wisor.routes.driver.dtos.DriverWithCarCreate
 import java.time.LocalDate
 import java.time.LocalDateTime
 

@@ -1,4 +1,4 @@
-package ua.com.fleet_wisor.routes
+package ua.com.fleet_wisor.routes.driver
 
 import io.ktor.http.*
 import io.ktor.http.content.*

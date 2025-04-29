@@ -1,4 +1,4 @@
-package ua.com.fleet_wisor.routes
+package ua.com.fleet_wisor.routes.car
 
 import io.ktor.http.*
 import io.ktor.server.auth.*
@@ -8,15 +8,17 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import ua.com.fleet_wisor.models.car.*
 import ua.com.fleet_wisor.models.user.Owner
-import ua.com.fleet_wisor.models.driver.DriverWithCarCreate
+import ua.com.fleet_wisor.routes.car.dto.CarCreate
+import ua.com.fleet_wisor.routes.car.dto.CarFillUpCreate
+import ua.com.fleet_wisor.routes.car.dto.InsuranceCreate
+import ua.com.fleet_wisor.routes.car.dto.MaintenanceCreate
+import ua.com.fleet_wisor.routes.driver.dtos.DriverWithCarCreate
 import ua.com.fleet_wisor.utils.notFoundMessage
 
 fun Route.configureCarRouting(
     carRepository: CarRepository
 ) {
     authenticate {
-
-
         route("/cars") {
             post {
                 val car = call.receive<CarCreate>()
@@ -25,11 +27,11 @@ fun Route.configureCarRouting(
             }
 
             get("/fuel-type") {
-                val list = carRepository.allFuelType()
+                val list = carRepository.allFuelType().map { it.asFuelTypeDto() }
                 call.respond(HttpStatusCode.OK, list.sortedBy { it.id })
             }
             get("/car-body") {
-                val list = carRepository.allCarBody()
+                val list = carRepository.allCarBody().map { it.asCarBodyDto() }
                 call.respond(HttpStatusCode.OK, list.sortedBy { it.id })
             }
 
@@ -39,7 +41,7 @@ fun Route.configureCarRouting(
                 val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
                 val car = carRepository.findById(id)
                 if (car != null) {
-                    call.respond(HttpStatusCode.OK, car)
+                    call.respond(HttpStatusCode.OK, car.asCarDto())
                 } else {
                     throw NotFoundException(notFoundMessage(Car::class, id, "Check your id"))
                 }
@@ -48,7 +50,7 @@ fun Route.configureCarRouting(
                 val ownerId =
                     call.principal<UserIdPrincipal>()?.name?.toIntOrNull() ?: throw IllegalArgumentException("Invalid")
 
-                val cars = carRepository.all(ownerId)
+                val cars = carRepository.all(ownerId).map { it.asCarDto() }
                 call.respond(HttpStatusCode.OK, cars)
             }
 
@@ -58,7 +60,8 @@ fun Route.configureCarRouting(
             route("/fill-up") {
                 get {
                     val carFillUp = carRepository.allFillUps()
-                    call.respond(HttpStatusCode.OK, carFillUp)
+
+                    call.respond(HttpStatusCode.OK, carFillUp.map { it.asCarFillUpDto() })
                 }
 
                 post {
@@ -70,7 +73,7 @@ fun Route.configureCarRouting(
             }
             route("/maintenance") {
                 get {
-                    val maintenance = carRepository.allMaintenance()
+                    val maintenance = carRepository.allMaintenance().map { it.asMaintenanceDto() }
                     call.respond(HttpStatusCode.OK, maintenance)
                 }
 
@@ -83,7 +86,7 @@ fun Route.configureCarRouting(
             }
             route("/insurance") {
                 get {
-                    val insurance = carRepository.allInsurances()
+                    val insurance = carRepository.allInsurances().map { it.asInsuranceDto() }
                     call.respond(HttpStatusCode.OK, insurance)
                 }
 

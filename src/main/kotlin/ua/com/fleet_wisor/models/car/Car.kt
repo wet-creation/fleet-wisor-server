@@ -1,17 +1,24 @@
 package ua.com.fleet_wisor.models.car
 
-import kotlinx.serialization.Serializable
 import ua.com.fleet_wisor.models.driver.Driver
 import ua.com.fleet_wisor.models.user.Owner
+import ua.com.fleet_wisor.routes.car.dto.CarBodyDto
+import ua.com.fleet_wisor.routes.car.dto.CarDto
+import ua.com.fleet_wisor.routes.car.dto.FuelTypeDto
 
-@Serializable
-data class CarBody(val id: Int = -1, val name: String = "")
+data class CarBody(val id: Int = -1, val nameUk: String = "", val nameEn: String = "") {
+    fun asCarBodyDto(): CarBodyDto {
+        return CarBodyDto(id = id, name = nameUk)
+    }
+}
 
-@Serializable
-data class FuelType(val id: Int = -1, val name: String = "")
+data class FuelType(val id: Int = -1, val nameUk: String = "", val nameEn: String = "") {
+    fun asFuelTypeDto(): FuelTypeDto {
+        return FuelTypeDto(id, nameUk)
+    }
+}
 
 
-@Serializable
 data class Car(
     val id: Int = -1,
     val brandName: String = "",
@@ -24,18 +31,20 @@ data class Car(
     val drivers: List<Driver> = listOf(),
     val fuelTypes: List<FuelType> = listOf(),
     val carBody: CarBody = CarBody(),
-)
+) {
+    fun asCarDto() = CarDto(
+        id = id,
+        brandName = brandName,
+        color = color,
+        vin = vin,
+        model = model,
+        licensePlate = licensePlate,
+        mileAge = mileAge,
+        owner = owner,
+        drivers = drivers,
+        fuelTypes = fuelTypes.map { it.asFuelTypeDto() },
+        carBody = carBody.asCarBodyDto()
+    )
+}
 
 
-@Serializable
-data class CarCreate(
-    val brandName: String,
-    val color: String?,
-    val vin: String?,
-    val model: String?,
-    val licensePlate: String?,
-    val mileAge: Long,
-    val ownerId: Int,
-    val fuelTypes: List<Int>,
-    val carBodyId: Int,
-)

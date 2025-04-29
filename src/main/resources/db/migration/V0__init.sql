@@ -24,8 +24,9 @@ CREATE TABLE IF NOT EXISTS driver
 
 CREATE TABLE IF NOT EXISTS car_body
 (
-    id   INT PRIMARY KEY AUTO_INCREMENT,
-    name VARCHAR(20) NOT NULL UNIQUE
+    id     INT PRIMARY KEY AUTO_INCREMENT,
+    nameUk VARCHAR(20) NOT NULL UNIQUE,
+    nameEn VARCHAR(20) NOT NULL UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS car
@@ -71,16 +72,36 @@ CREATE TABLE IF NOT EXISTS car_fill_up
     carId    INT      NOT NULL,
     time     DATETIME NOT NULL,
     price    FLOAT(8) NOT NULL,
-    amount    FLOAT(8) NOT NULL,
+    amount   FLOAT(8) NOT NULL,
     checkUrl VARCHAR(255),
     FOREIGN KEY (carId) REFERENCES car (id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS fuel_type
 (
-    id   INT PRIMARY KEY AUTO_INCREMENT,
-    name VARCHAR(20) NOT NULL UNIQUE
+    id     INT PRIMARY KEY AUTO_INCREMENT,
+    nameUk VARCHAR(20) NOT NULL UNIQUE,
+    nameEn VARCHAR(20) NOT NULL UNIQUE
 );
+
+CREATE TABLE fuel_units
+(
+    id         INT PRIMARY KEY AUTO_INCREMENT,
+    nameUk     VARCHAR(20) NOT NULL,
+    nameEn     VARCHAR(20) NOT NULL,
+    fuelTypeId INT         NOT NULL,
+    FOREIGN KEY (fuelTypeId) REFERENCES fuel_type (id)
+);
+
+CREATE TABLE owner_fuel_units
+(
+    ownerId INT NOT NULL,
+    unitId  INT NOT NULL,
+    PRIMARY KEY (ownerId, unitId),
+    FOREIGN KEY (unitId) REFERENCES fuel_units (id) ON DELETE CASCADE,
+    FOREIGN KEY (ownerId) REFERENCES owner (id) ON DELETE CASCADE
+);
+
 
 CREATE TABLE IF NOT EXISTS car_fuel_types
 (

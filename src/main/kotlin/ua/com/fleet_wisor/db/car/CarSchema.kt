@@ -14,21 +14,24 @@ import ua.com.fleet_wisor.models.car.FuelType
 
 object CarBodyTable : Table<Nothing>("car_body") {
     val id = int("id").primaryKey()
-    var name = varchar("name")
+    var nameUk = varchar("nameUk")
+    var nameEn = varchar("nameEn")
 }
 
 fun QueryRowSet.toCarBody(): CarBody {
     val t = this
     return CarBody(
         id = t[CarBodyTable.id]!!,
-        name = t[CarBodyTable.name]!!,
+        nameUk = t[CarBodyTable.nameUk]!!,
+        nameEn = t[CarBodyTable.nameEn]!!,
     )
 }
 
 
 object FuelTypeTable : Table<Nothing>("fuel_type") {
     val id = int("id").primaryKey()
-    var name = varchar("name")
+    var nameUk = varchar("nameUk")
+    var nameEn = varchar("nameEn")
 }
 
 object CarFuelTypesTable : Table<Nothing>("car_fuel_types") {
@@ -41,7 +44,8 @@ fun QueryRowSet.toFuelType(): FuelType {
     val t = this
     return FuelType(
         id = t[FuelTypeTable.id]!!,
-        name = t[FuelTypeTable.name]!!,
+        nameUk = t[FuelTypeTable.nameUk]!!,
+        nameEn = t[FuelTypeTable.nameEn]!!,
     )
 }
 

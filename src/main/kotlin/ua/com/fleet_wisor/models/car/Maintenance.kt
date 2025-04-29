@@ -1,8 +1,8 @@
 package ua.com.fleet_wisor.models.car
 
-import kotlinx.serialization.Serializable
+import ua.com.fleet_wisor.routes.car.dto.MaintenanceDto
 
-@Serializable
+
 data class Maintenance(
     val id: Int,
     val time: String,
@@ -10,13 +10,15 @@ data class Maintenance(
     val checkUrl: String,
     val car: Car,
     val price: Double,
-)
-
-@Serializable
-data class MaintenanceCreate(
-    val time: String,
-    val description: String,
-    val checkUrl: String,
-    val carId: Int,
-    val price: Double,
-)
+) {
+    fun asMaintenanceDto(): MaintenanceDto {
+        return MaintenanceDto(
+            id = id,
+            time = time,
+            description = description,
+            checkUrl = checkUrl,
+            car = car.asCarDto(),
+            price = price
+        )
+    }
+}

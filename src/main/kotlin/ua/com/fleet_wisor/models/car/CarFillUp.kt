@@ -1,9 +1,8 @@
 package ua.com.fleet_wisor.models.car
 
-import kotlinx.serialization.Serializable
+import ua.com.fleet_wisor.routes.car.dto.CarFillUpDto
 
 
-@Serializable
 data class CarFillUp(
     val id: Int,
     val time: String,
@@ -11,12 +10,16 @@ data class CarFillUp(
     val amount: Double,
     val checkUrl: String,
     val car: Car
-)
+) {
+    fun asCarFillUpDto() = CarFillUpDto(
+        id = id,
+        time = time,
+        price = price,
+        amount = amount,
+        checkUrl = checkUrl,
+        car = car.asCarDto()
+    )
+}
 
-@Serializable
-data class CarFillUpCreate(
-    val price: Double,
-    val checkUrl: String,
-    val time: String,
-    val carId: Int
-)
+
+

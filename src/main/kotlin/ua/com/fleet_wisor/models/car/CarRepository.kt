@@ -1,6 +1,10 @@
 package ua.com.fleet_wisor.models.car
 
-import ua.com.fleet_wisor.models.driver.DriverWithCarCreate
+import ua.com.fleet_wisor.routes.driver.dtos.DriverWithCarCreate
+import ua.com.fleet_wisor.routes.car.dto.CarCreate
+import ua.com.fleet_wisor.routes.car.dto.CarFillUpCreate
+import ua.com.fleet_wisor.routes.car.dto.InsuranceCreate
+import ua.com.fleet_wisor.routes.car.dto.MaintenanceCreate
 
 interface CarRepository {
 

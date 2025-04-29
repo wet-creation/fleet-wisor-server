@@ -1,5 +1,7 @@
 package ua.com.fleet_wisor.models.driver
 
+import ua.com.fleet_wisor.routes.driver.dtos.DriverWithCarCreate
+
 interface DriverRepository {
 
     suspend fun findByPhone(phone: String): Driver?
