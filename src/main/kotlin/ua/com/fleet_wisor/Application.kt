@@ -1,9 +1,6 @@
 package ua.com.fleet_wisor
 
 import io.ktor.server.application.*
-import io.ktor.server.plugins.calllogging.*
-import io.ktor.server.request.*
-import org.slf4j.event.Level
 import ua.com.fleet_wisor.db.DatabaseFactory
 import ua.com.fleet_wisor.db.car.CarRepositoryImpl
 import ua.com.fleet_wisor.db.driver.DriverRepositoryImpl

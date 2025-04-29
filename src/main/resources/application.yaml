@@ -4,6 +4,4 @@ ktor:
             - ua.com.fleet_wisor.ApplicationKt.module
     deployment:
         port: 8080
-        watch:
-            - ua.com.fleet_wisor
     development: $DEBUG

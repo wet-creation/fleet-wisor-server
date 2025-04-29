@@ -1,15 +1,11 @@
 services:
   app:
-    build:
-      context: .
-      dockerfile: DockerfileDev
-      cache_from:
-        - fleetwisor-app:latest
+    image: wetcreation/fleet-wisor-server
     volumes:
-      - .:/home/gradle/app:cached  # Монтируем проект в контейнер (с кэшированием)
+      - .:/home/gradle/app:cached
     working_dir: /home/gradle/app
     env_file:
-      - .env
+      - .dev.env
     ports:
       - "8080:8080"
     networks:
@@ -17,25 +13,6 @@ services:
     depends_on:
       - mysql
       - minio
-
-  mysql:
-    image: mysql:8.0
-    container_name: mysql-container
-    env_file:
-      - .dev.env
-    environment:
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
-      MYSQL_DATABASE: fleet_wisor_dev
-    ports:
-      - "3306:3306"
-    volumes:
-      - db_data:/var/lib/mysql
-    networks:
-      - fleet-wisor-network
-    healthcheck:
-      test: [ "CMD", "mysql", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}", "-e", "SELECT 1" ]
-      timeout: 20s
-      retries: 5
 
   minio:
     image: minio/minio:latest
