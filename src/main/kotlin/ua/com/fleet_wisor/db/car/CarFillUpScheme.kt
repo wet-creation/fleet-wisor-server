@@ -2,6 +2,7 @@ package ua.com.fleet_wisor.db.car
 
 import org.ktorm.dsl.QueryRowSet
 import org.ktorm.schema.*
+import ua.com.fleet_wisor.db.user.toFuelUnits
 import ua.com.fleet_wisor.models.car.CarFillUp
 
 object CarFillUpTable : Table<Nothing>("car_fill_up") {
@@ -12,6 +13,7 @@ object CarFillUpTable : Table<Nothing>("car_fill_up") {
     var price = double("price")
     var amount = double("amount")
     var carId = int("carId")
+    var unitId = int("unitId")
 
 }
 
@@ -23,6 +25,7 @@ fun QueryRowSet.toFillUp(): CarFillUp {
         price = t[CarFillUpTable.price]!!,
         amount = t[CarFillUpTable.amount]!!,
         car = toCar(),
+        fuelUnits = toFuelUnits(),
         checkUrl = t[CarFillUpTable.checkUrl]!!,
     )
 }

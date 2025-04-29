@@ -115,8 +115,8 @@ class CarRepositoryImpl : CarRepository {
             } as Int
 
             database.batchInsert(CarFuelTypesTable) {
-                item {
-                    car.fuelTypes.forEach { typeId ->
+                car.fuelTypes.forEach { typeId ->
+                    item {
                         set(it.carId, id)
                         set(it.fuelTypeId, typeId)
                     }
@@ -136,6 +136,7 @@ class CarRepositoryImpl : CarRepository {
                 set(CarFillUpTable.time, LocalDateTime.parse(carFillUpCreate.time))
                 set(CarFillUpTable.checkUrl, carFillUpCreate.checkUrl)
                 set(CarFillUpTable.price, carFillUpCreate.price)
+                set(CarFillUpTable.unitId, carFillUpCreate.unitId)
             }
         }
     }

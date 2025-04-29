@@ -1,17 +1,54 @@
 package ua.com.fleet_wisor.db.user
 
 import org.ktorm.dsl.*
+import org.ktorm.support.mysql.bulkInsertOrUpdate
+import ua.com.fleet_wisor.db.car.FuelTypeTable
 import ua.com.fleet_wisor.db.transactionalQuery
 import ua.com.fleet_wisor.db.useConnection
 import ua.com.fleet_wisor.models.user.*
+import ua.com.fleet_wisor.routes.owner.dtos.OwnerSettingsUpsert
 
 class OwnerRepositoryImpl : OwnerRepository {
+
 
     override suspend fun findByEmail(email: String): Owner? {
         return useConnection { database ->
             database.from(OwnerTable).select().where { OwnerTable.email eq email }.map {
                 it.toUser()
             }.firstOrNull()
+        }
+    }
+
+    override suspend fun getOwnerSettings(ownerId: Int): OwnerSettings {
+        return useConnection { database ->
+            val fuelUnits =
+                database.from(OwnerUnitTable).innerJoin(FuelUnitsTable, FuelUnitsTable.id eq OwnerUnitTable.unitId)
+                    .innerJoin(FuelTypeTable, FuelTypeTable.id eq OwnerUnitTable.fuelTypeId)
+                    .select()
+                    .where { OwnerUnitTable.ownerId eq ownerId }.map {
+                        it.toFuelUnits()
+                    }
+            OwnerSettings(
+                fuelUnits = fuelUnits
+            )
+        }
+    }
+
+    override suspend fun setOwnerSettings(ownerSettings: OwnerSettingsUpsert, ownerId: Int) {
+        transactionalQuery { database ->
+            database.bulkInsertOrUpdate(OwnerUnitTable) {
+                ownerSettings.fuelUnits.forEach { unit ->
+                    item {
+                        set(OwnerUnitTable.ownerId, ownerId)
+                        set(OwnerUnitTable.unitId, unit.idUnit)
+                        set(OwnerUnitTable.fuelTypeId, unit.idFuelType)
+                    }
+                }
+                onDuplicateKey { duplicateKey ->
+                    set(duplicateKey.unitId, values(duplicateKey.unitId))
+                }
+
+            }
         }
     }
 
@@ -47,7 +84,8 @@ class OwnerRepositoryImpl : OwnerRepository {
                 where { OwnerTable.id eq owner.id }
             }
 
-            database.from(OwnerTable).select().where { OwnerTable.id eq owner.id }.map { it.toUser().asOwnerNoPassword() }
+            database.from(OwnerTable).select().where { OwnerTable.id eq owner.id }
+                .map { it.toUser().asOwnerNoPassword() }
                 .firstOrNull()
         }
     }

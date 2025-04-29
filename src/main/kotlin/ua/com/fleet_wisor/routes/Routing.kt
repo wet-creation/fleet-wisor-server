@@ -11,6 +11,7 @@ import ua.com.fleet_wisor.models.driver.DriverRepository
 import ua.com.fleet_wisor.models.reports.ReportsRepository
 import ua.com.fleet_wisor.routes.car.configureCarRouting
 import ua.com.fleet_wisor.routes.driver.configureDriverRouting
+import ua.com.fleet_wisor.routes.owner.configureOwnerRouting
 
 fun Application.configureRouting(
     ownerRepository: OwnerRepository,

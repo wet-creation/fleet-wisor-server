@@ -20,7 +20,7 @@ VALUES ('Toyota', 4, 1, 'Чорний', 'JH4DB8590SS001234', 120000, 'Camry', '�
 
 -- Добавление связки водителей и машин
 INSERT INTO driver_with_car (carId, driverId, timeStart, timeEnd)
-VALUES (1,1 , '2024-03-01 08:00:00', NULL),
+VALUES (1, 1, '2024-03-01 08:00:00', NULL),
        (2, 2, '2024-04-10 09:30:00', NULL);
 
 -- Добавление техобслуговування
@@ -28,18 +28,19 @@ INSERT INTO maintenance (carId, description, price, time, checkUrl)
 VALUES (1, 'Заміна масла та фільтрів', 1500.50, '2024-06-15 10:00:00', 'https://example.com/check1.jpg'),
        (2, 'Ремонт ходової', 3000.75, '2024-06-20 15:30:00', 'https://example.com/check2.jpg');
 
--- Заправка машин
-INSERT INTO car_fill_up (carId, time, price, checkUrl, amount)
-VALUES (1, '2024-07-01 12:00:00', 1200, 'https://example.com/fuel1.jpg', 123),
- (1, '2025-07-01 00:00:00', 90, 'https://example.com/fuel2321.jpg', 123),
-       (2, '2024-07-02 14:00:00', 1500, 'https://example.com/fuel2.jpg', 123);
-
-
 
 -- Связка машины и типов топлива
 INSERT INTO car_fuel_types (fuelTypeId, carId)
-VALUES (1, 1),(4, 1),
+VALUES (1, 1),
+       (4, 1),
        (2, 2);
+
+-- Заправка машин
+INSERT INTO car_fill_up (carId, time, price, checkUrl, amount, unitId)
+VALUES (1, '2024-07-01 12:00:00', 1200, 'https://example.com/fuel1.jpg', 123, 1),
+       (1, '2025-07-01 00:00:00', 90, 'https://example.com/fuel2321.jpg', 123, 1),
+       (2, '2024-07-02 14:00:00', 1500, 'https://example.com/fuel2.jpg', 123, 12);
+
 
 -- Добавление страховки
 INSERT INTO insurance (carId, startDate, endDate, photoUrl)

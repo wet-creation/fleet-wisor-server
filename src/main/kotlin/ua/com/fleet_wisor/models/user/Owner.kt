@@ -1,6 +1,8 @@
 package ua.com.fleet_wisor.models.user
 
 import kotlinx.serialization.Serializable
+import ua.com.fleet_wisor.models.car.FuelUnits
+import ua.com.fleet_wisor.routes.owner.dtos.OwnerSettingsDto
 
 @Serializable
 data class Owner(
@@ -17,6 +19,18 @@ data class Owner(
         surname = surname
     )
 }
+
+data class OwnerSettings(
+    val fuelUnits: List<FuelUnits>,
+) {
+    fun asUserSettingsDto(): OwnerSettingsDto {
+        return OwnerSettingsDto(
+            fuelUnits = fuelUnits.map { it.asFuelUnits() }
+
+        )
+    }
+}
+
 @Serializable
 data class OwnerNoPassword(
     val id: Int = 0,
@@ -24,12 +38,12 @@ data class OwnerNoPassword(
     val name: String = "",
     val surname: String = "",
 )
+
 @Serializable
 data class PasswordUpdate(
     val oldPassword: String = "",
     val newPassword: String = "",
 )
-
 
 
 @Serializable

@@ -66,16 +66,6 @@ CREATE TABLE IF NOT EXISTS maintenance
     FOREIGN KEY (carId) REFERENCES car (id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS car_fill_up
-(
-    id       INT PRIMARY KEY AUTO_INCREMENT,
-    carId    INT      NOT NULL,
-    time     DATETIME NOT NULL,
-    price    FLOAT(8) NOT NULL,
-    amount   FLOAT(8) NOT NULL,
-    checkUrl VARCHAR(255),
-    FOREIGN KEY (carId) REFERENCES car (id) ON DELETE CASCADE
-);
 
 CREATE TABLE IF NOT EXISTS fuel_type
 (
@@ -95,10 +85,12 @@ CREATE TABLE fuel_units
 
 CREATE TABLE owner_fuel_units
 (
-    ownerId INT NOT NULL,
-    unitId  INT NOT NULL,
-    PRIMARY KEY (ownerId, unitId),
+    ownerId    INT NOT NULL,
+    unitId     INT NOT NULL,
+    fuelTypeId INT NOT NULL,
+    PRIMARY KEY (ownerId, fuelTypeId),
     FOREIGN KEY (unitId) REFERENCES fuel_units (id) ON DELETE CASCADE,
+    FOREIGN KEY (fuelTypeId) REFERENCES fuel_type (id) ON DELETE CASCADE,
     FOREIGN KEY (ownerId) REFERENCES owner (id) ON DELETE CASCADE
 );
 
@@ -120,4 +112,17 @@ CREATE TABLE IF NOT EXISTS insurance
     endDate   DATE NOT NULL,
     photoUrl  VARCHAR(255),
     FOREIGN KEY (carId) REFERENCES car (id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS car_fill_up
+(
+    id       INT PRIMARY KEY AUTO_INCREMENT,
+    carId    INT      NOT NULL,
+    time     DATETIME NOT NULL,
+    price    FLOAT(8) NOT NULL,
+    amount   FLOAT(8) NOT NULL,
+    unitId   INT      NOT NULL,
+    checkUrl VARCHAR(255),
+    FOREIGN KEY (carId) REFERENCES car (id) ON DELETE CASCADE,
+    FOREIGN KEY (unitId) REFERENCES fuel_units (id) ON DELETE CASCADE
 );
