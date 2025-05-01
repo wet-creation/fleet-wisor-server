@@ -6,6 +6,7 @@ import org.ktorm.schema.int
 import org.ktorm.schema.long
 import org.ktorm.schema.varchar
 import ua.com.fleet_wisor.db.driver.toLeftJoinDriver
+import ua.com.fleet_wisor.db.user.toFuelUnits
 import ua.com.fleet_wisor.db.user.toUser
 import ua.com.fleet_wisor.models.car.Car
 import ua.com.fleet_wisor.models.car.CarBody
@@ -46,6 +47,7 @@ fun QueryRowSet.toFuelType(): FuelType {
         id = t[FuelTypeTable.id]!!,
         nameUk = t[FuelTypeTable.nameUk]!!,
         nameEn = t[FuelTypeTable.nameEn]!!,
+        fuelUnits = listOf(toFuelUnits())
     )
 }
 

@@ -15,6 +15,6 @@ data class InsuranceDto(
 data class InsuranceCreate(
     val startDate: String,
     val endDate: String,
-    val carId: Int,
-    val photoUrl: String,
+    val carId: Int = -1,
+    val photoUrl: String? = null,
 )

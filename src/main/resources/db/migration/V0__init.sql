@@ -36,10 +36,10 @@ CREATE TABLE IF NOT EXISTS car
     ownerId      INT                NOT NULL,
     carBodyId    INT                NOT NULL,
     color        VARCHAR(20),
-    vin          VARCHAR(18) UNIQUE,
+    vin          VARCHAR(18) UNIQUE NULL,
     mileage      BIGINT DEFAULT 0,
     model        VARCHAR(20),
-    licensePlate VARCHAR(20) UNIQUE NULL,
+    licensePlate VARCHAR(20) UNIQUE,
     FOREIGN KEY (ownerId) REFERENCES owner (id) ON DELETE CASCADE,
     FOREIGN KEY (carBodyId) REFERENCES car_body (id) ON DELETE CASCADE
 );

@@ -6,5 +6,4 @@ import kotlinx.serialization.Serializable
 data class FuelUnitsDto(
     val id: Int,
     val name: String,
-    val fuelType: FuelTypeDto,
 )

@@ -5,6 +5,7 @@ import ua.com.fleet_wisor.models.user.Owner
 import ua.com.fleet_wisor.routes.car.dto.CarBodyDto
 import ua.com.fleet_wisor.routes.car.dto.CarDto
 import ua.com.fleet_wisor.routes.car.dto.FuelTypeDto
+import ua.com.fleet_wisor.routes.car.dto.SimpleFuelTypeDto
 
 data class CarBody(val id: Int = -1, val nameUk: String = "", val nameEn: String = "") {
     fun asCarBodyDto(): CarBodyDto {
@@ -12,10 +13,16 @@ data class CarBody(val id: Int = -1, val nameUk: String = "", val nameEn: String
     }
 }
 
-data class FuelType(val id: Int = -1, val nameUk: String = "", val nameEn: String = "") {
-    fun asFuelTypeDto(): FuelTypeDto {
-        return FuelTypeDto(id, nameUk)
+data class FuelType(
+    val id: Int = -1,
+    val nameUk: String = "",
+    val nameEn: String = "",
+    val fuelUnits: List<FuelUnits> = emptyList()
+) {
+    fun asSimpleFuelTypeDto(): SimpleFuelTypeDto {
+        return SimpleFuelTypeDto(id, nameUk)
     }
+    fun asFuelTypeDto(): FuelTypeDto = FuelTypeDto(id, nameUk, units = fuelUnits.map { it.asFuelUnits() })
 }
 
 
@@ -42,7 +49,7 @@ data class Car(
         mileAge = mileAge,
         owner = owner,
         drivers = drivers,
-        fuelTypes = fuelTypes.map { it.asFuelTypeDto() },
+        fuelTypes = fuelTypes.map { it.asSimpleFuelTypeDto() },
         carBody = carBody.asCarBodyDto()
     )
 }

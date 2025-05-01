@@ -9,7 +9,10 @@ import ua.com.fleet_wisor.models.user.Owner
 data class CarBodyDto(val id: Int = -1, val name: String = "")
 
 @Serializable
-data class FuelTypeDto(val id: Int = -1, val name: String = "")
+data class SimpleFuelTypeDto(val id: Int = -1, val name: String = "")
+
+@Serializable
+data class FuelTypeDto(val id: Int = -1, val name: String = "", val units: List<FuelUnitsDto> = emptyList())
 
 @Serializable
 data class CarDto(
@@ -22,7 +25,7 @@ data class CarDto(
     val mileAge: Long = 0,
     val owner: Owner = Owner(),
     val drivers: List<Driver> = listOf(),
-    val fuelTypes: List<FuelTypeDto> = listOf(),
+    val fuelTypes: List<SimpleFuelTypeDto> = listOf(),
     val carBody: CarBodyDto = CarBodyDto(),
 )
 
@@ -35,7 +38,14 @@ data class CarCreate(
     val model: String?,
     val licensePlate: String?,
     val mileAge: Long,
-    val ownerId: Int,
+    val drivers: List<Int>,
+    val ownerId: Int = -1,
     val fuelTypes: List<Int>,
     val carBodyId: Int,
 )
+@Serializable
+data class CarCreateApi(
+    val carCreate: CarCreate,
+    val insuranceCreate: InsuranceCreate? = null,
+)
+

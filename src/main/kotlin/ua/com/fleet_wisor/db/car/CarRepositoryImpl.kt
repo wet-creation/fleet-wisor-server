@@ -9,6 +9,7 @@ import ua.com.fleet_wisor.db.user.OwnerTable
 import ua.com.fleet_wisor.db.driver.assignCarToDriver
 import ua.com.fleet_wisor.db.mapCollection
 import ua.com.fleet_wisor.db.useConnection
+import ua.com.fleet_wisor.db.user.FuelUnitsTable
 import ua.com.fleet_wisor.models.car.*
 import ua.com.fleet_wisor.routes.driver.dtos.DriverWithCarCreate
 import ua.com.fleet_wisor.routes.car.dto.CarCreate
@@ -25,6 +26,12 @@ class CarRepositoryImpl : CarRepository {
         return existing.copy(
             fuelTypes = existing.fuelTypes + newCar.fuelTypes,
             drivers = existing.drivers + newCar.drivers
+        )
+    }
+
+    private fun mergeFuelUnits(old: FuelType, new: FuelType): FuelType {
+        return old.copy(
+            fuelUnits = old.fuelUnits + new.fuelUnits,
         )
     }
 
@@ -52,7 +59,8 @@ class CarRepositoryImpl : CarRepository {
                     DriverWithCarTable.id,
                     DriverWithCarTable.carId,
                     CarFuelTypesTable.fuelTypeId,
-                    FuelTypeTable.id
+                    FuelTypeTable.id,
+                    FuelUnitsTable.id
                 ).mapCollection(pkColumn = CarTable.id, merge = ::mergeCars) {
                     it.toCar()
                 }
@@ -76,6 +84,9 @@ class CarRepositoryImpl : CarRepository {
             .leftJoin(DriverWithCarTable, CarTable.id eq DriverWithCarTable.carId)
             .leftJoin(
                 DriverTable, DriverTable.id eq DriverWithCarTable.driverId
+            )
+            .leftJoin(
+                FuelUnitsTable, FuelUnitsTable.fuelTypeId eq FuelTypeTable.id
             ).select()
     }
 
@@ -101,7 +112,7 @@ class CarRepositoryImpl : CarRepository {
         }
     }
 
-    override suspend fun create(car: CarCreate) {
+    override suspend fun create(ownerId: Int, car: CarCreate, insurance: InsuranceCreate?) {
         transactionalQuery { database ->
             val id = database.insertAndGenerateKey(CarTable) {
                 set(it.brandName, car.brandName)
@@ -111,7 +122,7 @@ class CarRepositoryImpl : CarRepository {
                 set(it.licensePlate, car.licensePlate)
                 set(it.mileAge, car.mileAge)
                 set(it.carBodyId, car.carBodyId)
-                set(it.ownerId, car.ownerId)
+                set(it.ownerId, ownerId)
             } as Int
 
             database.batchInsert(CarFuelTypesTable) {
@@ -123,6 +134,25 @@ class CarRepositoryImpl : CarRepository {
                 }
 
             }
+            if (car.drivers.isNotEmpty())
+                database.batchInsert(DriverWithCarTable) {
+                    car.drivers.forEach { driverId ->
+                        item {
+                            set(it.carId, id)
+                            set(it.driverId, driverId)
+                            set(it.timestampStart, LocalDateTime.now())
+                        }
+                    }
+                }
+            if (insurance != null) {
+                database.insert(InsuranceTable) {
+                    set(it.carId, id)
+                    set(it.endDate, LocalDate.parse(insurance.endDate))
+                    set(it.startDate, LocalDate.parse(insurance.startDate))
+                    set(it.photoUrl, insurance.photoUrl)
+                }
+            }
+
 
         }
 
@@ -151,6 +181,8 @@ class CarRepositoryImpl : CarRepository {
                 )
                 .innerJoin(
                     FuelTypeTable, FuelTypeTable.id eq CarFuelTypesTable.fuelTypeId
+                ).innerJoin(
+                    FuelUnitsTable, CarFillUpTable.unitId eq FuelUnitsTable.id
                 ).innerJoin(
                     OwnerTable, OwnerTable.id eq CarTable.ownerId
                 ).select().mapCollection(CarFillUpTable.id, ::mergeFillUp) {
@@ -228,7 +260,8 @@ class CarRepositoryImpl : CarRepository {
 
     override suspend fun allFuelType(): List<FuelType> {
         return useConnection { database ->
-            database.from(FuelTypeTable).select().map { it.toFuelType() }
+            database.from(FuelTypeTable).innerJoin(FuelUnitsTable, FuelTypeTable.id eq FuelUnitsTable.fuelTypeId)
+                .select().mapCollection(FuelTypeTable.id, ::mergeFuelUnits) { it.toFuelType() }
         }
     }
 }

@@ -1,14 +1,20 @@
 package ua.com.fleet_wisor.routes.car
 
 import io.ktor.http.*
+import io.ktor.http.content.*
 import io.ktor.server.auth.*
 import io.ktor.server.plugins.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import ua.com.fleet_wisor.models.car.*
+import io.ktor.utils.io.*
+import io.ktor.utils.io.streams.*
+import kotlinx.serialization.json.Json
+import ua.com.fleet_wisor.minio.MinioService
+import ua.com.fleet_wisor.models.car.Car
+import ua.com.fleet_wisor.models.car.CarRepository
 import ua.com.fleet_wisor.models.user.Owner
-import ua.com.fleet_wisor.routes.car.dto.CarCreate
+import ua.com.fleet_wisor.routes.car.dto.CarCreateApi
 import ua.com.fleet_wisor.routes.car.dto.CarFillUpCreate
 import ua.com.fleet_wisor.routes.car.dto.InsuranceCreate
 import ua.com.fleet_wisor.routes.car.dto.MaintenanceCreate
@@ -21,8 +27,39 @@ fun Route.configureCarRouting(
     authenticate {
         route("/cars") {
             post {
-                val car = call.receive<CarCreate>()
-                carRepository.create(car)
+                val ownerId =
+                    call.principal<UserIdPrincipal>()?.name?.toIntOrNull() ?: throw IllegalArgumentException("Invalid")
+                val multiPart = call.receiveMultipart()
+                var photoUrl = ""
+                multiPart.forEachPart { part ->
+                    when (part.name) {
+                        "photo" -> {
+                            part as PartData.FileItem
+                            val contentType = part.contentType?.toString() ?: "application/octet-stream"
+                            photoUrl = MinioService.uploadPhotoToMinio(
+                                inputStream = part.provider().readBuffer().inputStream(),
+                                contentType = contentType,
+                            )
+
+                        }
+
+                        "body" -> {
+                            part as PartData.FormItem
+                            val jsonBody = part.value
+                            val carCreateApi = Json.decodeFromString<CarCreateApi>(jsonBody)
+                            carRepository.create(
+                                ownerId,
+                                carCreateApi.carCreate,
+                                carCreateApi.insuranceCreate?.copy(photoUrl = photoUrl)
+                            )
+                        }
+
+                        else -> {
+                            call.respond(HttpStatusCode.BadRequest)
+                        }
+                    }
+                    part.dispose()
+                }
                 call.respond(HttpStatusCode.Created)
             }
 

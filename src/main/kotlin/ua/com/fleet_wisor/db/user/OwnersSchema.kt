@@ -4,7 +4,6 @@ import org.ktorm.dsl.QueryRowSet
 import org.ktorm.schema.Table
 import org.ktorm.schema.int
 import org.ktorm.schema.varchar
-import ua.com.fleet_wisor.db.car.toFuelType
 import ua.com.fleet_wisor.models.car.FuelUnits
 import ua.com.fleet_wisor.models.user.Owner
 
@@ -36,7 +35,6 @@ fun QueryRowSet.toFuelUnits(): FuelUnits {
         id = t[FuelUnitsTable.id]!!,
         nameUk = t[FuelUnitsTable.nameUk]!!,
         nameEn = t[FuelUnitsTable.nameEn]!!,
-        fuelType = toFuelType()
     )
 }
 

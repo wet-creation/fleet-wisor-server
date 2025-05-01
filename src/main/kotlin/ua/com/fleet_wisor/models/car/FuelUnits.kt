@@ -6,13 +6,12 @@ data class FuelUnits(
     val id: Int,
     val nameUk: String,
     val nameEn: String,
-    val fuelType: FuelType,
+    val fuelType: FuelType = FuelType(),
 ) {
     fun asFuelUnits(): FuelUnitsDto {
         return FuelUnitsDto(
             id = id,
             name = nameUk,
-            fuelType = fuelType.asFuelTypeDto()
         )
     }
 }

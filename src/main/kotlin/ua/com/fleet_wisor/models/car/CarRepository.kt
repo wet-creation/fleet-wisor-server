@@ -12,7 +12,7 @@ interface CarRepository {
     suspend fun findById(id: Int): Car?
     suspend fun update(car: Car): Car?
     suspend fun delete(id: Int): Boolean
-    suspend fun create(car: CarCreate)
+    suspend fun create(ownerId: Int, car: CarCreate, insurance: InsuranceCreate? = null)
 
     suspend fun fillUpCar(carFillUpCreate: CarFillUpCreate)
 
