@@ -38,6 +38,12 @@ fun QueryRowSet.toFuelUnits(): FuelUnits {
     )
 }
 
+fun QueryRowSet.toLeftJoinFuelTypeUnits(): FuelUnits? {
+    val t = this
+    if (t[FuelUnitsTable.id] == null)
+        return null
+    return toFuelUnits()
+}
 
 
 fun QueryRowSet.toUser(): Owner {

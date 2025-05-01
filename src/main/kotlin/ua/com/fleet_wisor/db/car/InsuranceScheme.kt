@@ -23,7 +23,6 @@ fun QueryRowSet.toInsurance(): Insurance {
         startDate = t[InsuranceTable.startDate].toString(),
         endDate = t[InsuranceTable.endDate].toString(),
         photoUrl = t[InsuranceTable.photoUrl]!!,
-        car = toCar()
     )
 }
 

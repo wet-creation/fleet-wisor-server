@@ -35,8 +35,8 @@ data class Car(
     val licensePlate: String? = null,
     val mileAge: Long = 0,
     val owner: Owner = Owner(),
-    val drivers: List<Driver> = listOf(),
-    val fuelTypes: List<FuelType> = listOf(),
+    val drivers: Set<Driver> = setOf(),
+    val fuelTypes: Set<FuelType> = setOf(),
     val carBody: CarBody = CarBody(),
 ) {
     fun asCarDto() = CarDto(
@@ -48,7 +48,7 @@ data class Car(
         licensePlate = licensePlate,
         mileAge = mileAge,
         owner = owner,
-        drivers = drivers,
+        drivers = drivers.toList(),
         fuelTypes = fuelTypes.map { it.asSimpleFuelTypeDto() },
         carBody = carBody.asCarBodyDto()
     )

@@ -4,11 +4,12 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class InsuranceDto(
-    val id: Int,
-    val startDate: String,
-    val endDate: String,
-    val car: CarDto,
-    val photoUrl: String,
+    val id: Int = -1,
+    val startDate: String ="",
+    val endDate: String = "",
+    val photoUrl: String = "",
+    val carId: Int = -1,
+
 )
 
 @Serializable

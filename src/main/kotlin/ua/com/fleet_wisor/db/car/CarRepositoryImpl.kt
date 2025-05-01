@@ -14,7 +14,9 @@ import ua.com.fleet_wisor.models.car.*
 import ua.com.fleet_wisor.routes.driver.dtos.DriverWithCarCreate
 import ua.com.fleet_wisor.routes.car.dto.CarCreate
 import ua.com.fleet_wisor.routes.car.dto.CarFillUpCreate
+import ua.com.fleet_wisor.routes.car.dto.CarUpdate
 import ua.com.fleet_wisor.routes.car.dto.InsuranceCreate
+import ua.com.fleet_wisor.routes.car.dto.InsuranceDto
 import ua.com.fleet_wisor.routes.car.dto.MaintenanceCreate
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -43,9 +45,6 @@ class CarRepositoryImpl : CarRepository {
         return existing.copy(car = mergeCars(existing.car, new.car))
     }
 
-    private fun mergeInsurance(existing: Insurance, new: Insurance): Insurance {
-        return existing.copy(car = mergeCars(existing.car, new.car))
-    }
 
     override suspend fun all(ownerId: Int): List<Car> {
         return useConnection { database ->
@@ -60,7 +59,6 @@ class CarRepositoryImpl : CarRepository {
                     DriverWithCarTable.carId,
                     CarFuelTypesTable.fuelTypeId,
                     FuelTypeTable.id,
-                    FuelUnitsTable.id
                 ).mapCollection(pkColumn = CarTable.id, merge = ::mergeCars) {
                     it.toCar()
                 }
@@ -84,9 +82,6 @@ class CarRepositoryImpl : CarRepository {
             .leftJoin(DriverWithCarTable, CarTable.id eq DriverWithCarTable.carId)
             .leftJoin(
                 DriverTable, DriverTable.id eq DriverWithCarTable.driverId
-            )
-            .leftJoin(
-                FuelUnitsTable, FuelUnitsTable.fuelTypeId eq FuelTypeTable.id
             ).select()
     }
 
@@ -100,8 +95,62 @@ class CarRepositoryImpl : CarRepository {
         }
     }
 
-    override suspend fun update(car: Car): Car? {
-        TODO("Not yet implemented")
+    override suspend fun update(car: CarUpdate): Car? {
+        return transactionalQuery { database ->
+            database.delete(CarFuelTypesTable) { it.carId eq car.id }
+            val driverIds = database.from(DriverWithCarTable).select(DriverWithCarTable.driverId)
+                .where { DriverWithCarTable.carId eq car.id }.map { it[DriverWithCarTable.driverId] }
+            val idsForDeletion = buildList {
+                driverIds.forEach { id ->
+                    if (!car.drivers.contains(id)) {
+                        add(id)
+                    }
+                }
+            }
+            val idsForAddition = buildList {
+                car.drivers.forEach { id ->
+                    if (!driverIds.contains(id)) {
+                        add(id)
+                    }
+                }
+            }
+            database.update(CarTable) {
+                set(it.brandName, car.brandName)
+                set(it.color, car.color)
+                set(it.vin, car.vin)
+                set(it.model, car.model)
+                set(it.licensePlate, car.licensePlate)
+                set(it.mileAge, car.mileAge)
+                set(it.carBodyId, car.carBodyId)
+                where { it.id eq car.id }
+            }
+            if (car.fuelTypes.isNotEmpty())
+                database.batchInsert(CarFuelTypesTable) {
+                    car.fuelTypes.forEach { typeId ->
+                        item {
+                            set(it.carId, car.id)
+                            set(it.fuelTypeId, typeId)
+                        }
+                    }
+                }
+            idsForDeletion.forEach { id ->
+                if (id == null) return@forEach
+                database.delete(DriverWithCarTable) { (it.driverId eq id).and(it.carId eq car.id) }
+            }
+            if (idsForAddition.isNotEmpty())
+                database.batchInsert(DriverWithCarTable) {
+                    idsForAddition.forEach { driverId ->
+                        item {
+                            set(it.carId, car.id)
+                            set(it.driverId, driverId)
+                            set(it.timestampStart, LocalDateTime.now())
+                        }
+                    }
+
+                }
+
+            findById(car.id)
+        }
     }
 
     override suspend fun delete(id: Int): Boolean {
@@ -219,7 +268,24 @@ class CarRepositoryImpl : CarRepository {
                     FuelTypeTable, FuelTypeTable.id eq CarFuelTypesTable.fuelTypeId
                 ).innerJoin(
                     OwnerTable, OwnerTable.id eq CarTable.ownerId
-                ).select().mapCollection(CarTable.id, ::mergeInsurance) { it.toInsurance() }
+                ).select().map { it.toInsurance() }
+        }
+    }
+
+    override suspend fun getByCarInsurances(carId: Int): Insurance? {
+        return useConnection { database ->
+            database.from(InsuranceTable)
+                .innerJoin(CarTable, InsuranceTable.carId eq CarTable.id)
+                .innerJoin(CarBodyTable, CarTable.carBodyId eq CarBodyTable.id)
+                .innerJoin(
+                    CarFuelTypesTable, CarFuelTypesTable.carId eq CarTable.id
+                )
+                .innerJoin(
+                    FuelTypeTable, FuelTypeTable.id eq CarFuelTypesTable.fuelTypeId
+                ).innerJoin(
+                    OwnerTable, OwnerTable.id eq CarTable.ownerId
+                ).select().where { InsuranceTable.carId eq carId }
+                .map { it.toInsurance() }.firstOrNull()
         }
     }
 
@@ -262,6 +328,37 @@ class CarRepositoryImpl : CarRepository {
         return useConnection { database ->
             database.from(FuelTypeTable).innerJoin(FuelUnitsTable, FuelTypeTable.id eq FuelUnitsTable.fuelTypeId)
                 .select().mapCollection(FuelTypeTable.id, ::mergeFuelUnits) { it.toFuelType() }
+        }
+    }
+
+    override suspend fun updateInsurance(insuranceUpdate: InsuranceDto): Insurance? {
+        return transactionalQuery { database ->
+            database.update(InsuranceTable) {
+                set(it.photoUrl, insuranceUpdate.photoUrl)
+                set(it.startDate, LocalDate.parse(insuranceUpdate.startDate))
+                set(it.endDate, LocalDate.parse(insuranceUpdate.endDate))
+                where { it.id eq insuranceUpdate.id }
+            }
+
+            findInsuranceById(insuranceUpdate.id)
+
+        }
+    }
+
+    override suspend fun findInsuranceById(id: Int): Insurance? {
+        return useConnection { database ->
+            database.from(InsuranceTable)
+                .innerJoin(CarTable, InsuranceTable.carId eq CarTable.id)
+                .innerJoin(CarBodyTable, CarTable.carBodyId eq CarBodyTable.id)
+                .innerJoin(
+                    CarFuelTypesTable, CarFuelTypesTable.carId eq CarTable.id
+                )
+                .innerJoin(
+                    FuelTypeTable, FuelTypeTable.id eq CarFuelTypesTable.fuelTypeId
+                ).innerJoin(
+                    OwnerTable, OwnerTable.id eq CarTable.ownerId
+                ).select().where { InsuranceTable.id eq id }
+                .map { it.toInsurance() }.firstOrNull()
         }
     }
 }

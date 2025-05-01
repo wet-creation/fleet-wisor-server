@@ -33,7 +33,7 @@ class DriverRepositoryImpl : DriverRepository {
 
     private fun mergeCars(existing: Car, newCar: Car): Car {
         return existing.copy(
-            fuelTypes = (existing.fuelTypes + newCar.fuelTypes).distinctBy { it.id }
+            fuelTypes = (existing.fuelTypes + newCar.fuelTypes).distinctBy { it.id }.toSet()
         )
     }
 

@@ -42,6 +42,18 @@ data class CarCreate(
     val ownerId: Int = -1,
     val fuelTypes: List<Int>,
     val carBodyId: Int,
+)@Serializable
+data class CarUpdate(
+    val id: Int,
+    val brandName: String,
+    val color: String?,
+    val vin: String?,
+    val model: String?,
+    val licensePlate: String?,
+    val mileAge: Long,
+    val drivers: List<Int>,
+    val fuelTypes: List<Int>,
+    val carBodyId: Int,
 )
 @Serializable
 data class CarCreateApi(

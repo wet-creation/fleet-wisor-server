@@ -6,7 +6,6 @@ data class Insurance(
     val id: Int,
     val startDate: String,
     val endDate: String,
-    val car: Car,
     val photoUrl: String,
 ) {
     fun asInsuranceDto(): InsuranceDto {
@@ -14,7 +13,6 @@ data class Insurance(
             id = id,
             startDate = startDate,
             endDate = endDate,
-            car = car.asCarDto(),
             photoUrl = photoUrl
         )
     }

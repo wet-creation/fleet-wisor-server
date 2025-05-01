@@ -13,11 +13,7 @@ import kotlinx.serialization.json.Json
 import ua.com.fleet_wisor.minio.MinioService
 import ua.com.fleet_wisor.models.car.Car
 import ua.com.fleet_wisor.models.car.CarRepository
-import ua.com.fleet_wisor.models.user.Owner
-import ua.com.fleet_wisor.routes.car.dto.CarCreateApi
-import ua.com.fleet_wisor.routes.car.dto.CarFillUpCreate
-import ua.com.fleet_wisor.routes.car.dto.InsuranceCreate
-import ua.com.fleet_wisor.routes.car.dto.MaintenanceCreate
+import ua.com.fleet_wisor.routes.car.dto.*
 import ua.com.fleet_wisor.routes.driver.dtos.DriverWithCarCreate
 import ua.com.fleet_wisor.utils.notFoundMessage
 
@@ -92,6 +88,15 @@ fun Route.configureCarRouting(
             }
 
             put {
+                val car = call.receive<CarUpdate>()
+                val res = carRepository.update(car) ?: throw NotFoundException(
+                    notFoundMessage(Car::class, car.id, "Check your id")
+                )
+                call.respond(
+                    HttpStatusCode.OK,
+                    res.asCarDto()
+                )
+
 
             }
             route("/fill-up") {
@@ -122,15 +127,66 @@ fun Route.configureCarRouting(
 
             }
             route("/insurance") {
-                get {
-                    val insurance = carRepository.allInsurances().map { it.asInsuranceDto() }
-                    call.respond(HttpStatusCode.OK, insurance)
+
+                get("/{carId}") {
+                    val id = call.parameters["carId"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
+                    val insurance = carRepository.getByCarInsurances(id)?.asInsuranceDto()
+                    call.respond(HttpStatusCode.OK, insurance ?: InsuranceDto())
                 }
 
-                post {
-                    val insurance = call.receive<InsuranceCreate>() //todo photo
-                    carRepository.addInsurance(insurance)
-                    call.respond(HttpStatusCode.Created)
+                put("/{id}") {
+                    val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
+
+                    val insurance = carRepository.findInsuranceById(id)
+                    val multiPart = call.receiveMultipart()
+                    var photoName = ""
+                    multiPart.forEachPart { part ->
+                        when (part.name) {
+                            "photo" -> {
+                                part as PartData.FileItem
+                                if (insurance != null && insurance.photoUrl != "")
+                                    MinioService.remove(insurance.photoUrl)
+
+                                val contentType = part.contentType?.toString() ?: "application/octet-stream"
+                                photoName = MinioService.uploadPhotoToMinio(
+                                    inputStream = part.provider().readBuffer().inputStream(),
+                                    contentType = contentType,
+                                )
+                            }
+
+
+                            "body" -> {
+                                part as PartData.FormItem
+                                val jsonBody = part.value
+                                val insuranceDto = Json.decodeFromString<InsuranceDto>(jsonBody)
+
+
+                                if (insurance != null)
+                                    carRepository.updateInsurance(
+                                        insuranceDto.copy(
+                                            photoUrl = if (photoName == "") insurance.photoUrl else photoName
+                                        )
+                                    )?.asInsuranceDto() else {
+                                    carRepository.addInsurance(
+                                        InsuranceCreate(
+                                            carId = insuranceDto.carId,
+                                            startDate = insuranceDto.startDate,
+                                            endDate = insuranceDto.endDate,
+                                            photoUrl = photoName
+                                        )
+                                    )
+                                }
+                            }
+
+                            else -> {
+                                call.respond(HttpStatusCode.BadRequest)
+                            }
+                        }
+                        part.dispose()
+                    }
+                    call.respond(
+                        HttpStatusCode.OK,
+                    )
                 }
 
             }
@@ -144,9 +200,13 @@ fun Route.configureCarRouting(
 
             delete("/{id}") {
                 val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
+                val insurance = carRepository.getByCarInsurances(id) ?: throw NotFoundException()
+                if (insurance.photoUrl != "")
+                    MinioService.remove(insurance.photoUrl)
+
                 if (carRepository.delete(id))
                     call.respond(HttpStatusCode.OK)
-                else throw NotFoundException(notFoundMessage(Owner::class, id, "Check your id"))
+                else throw NotFoundException(notFoundMessage(Car::class, id, "Check your id"))
             }
         }
     }
