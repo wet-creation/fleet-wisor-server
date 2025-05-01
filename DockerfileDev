@@ -1,0 +1,5 @@
+FROM gradle:latest AS dev
+
+WORKDIR /home/gradle/app
+
+CMD ["gradle", "-t", "run", "--no-daemon"]

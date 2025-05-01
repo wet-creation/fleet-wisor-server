@@ -1,11 +1,17 @@
 package ua.com.fleet_wisor
 
 import io.ktor.server.application.*
-import org.jetbrains.exposed.sql.Database
-import ua.com.fleet_wisor.db.configureDatabases
-import ua.com.fleet_wisor.db.user.UserRepositoryImpl
+import ua.com.fleet_wisor.db.DatabaseFactory
+import ua.com.fleet_wisor.db.car.CarRepositoryImpl
+import ua.com.fleet_wisor.db.driver.DriverRepositoryImpl
+import ua.com.fleet_wisor.db.reports.ReportsRepositoryImpl
+import ua.com.fleet_wisor.db.user.OwnerRepositoryImpl
 import ua.com.fleet_wisor.di.configureFrameworks
-import ua.com.fleet_wisor.plugins.*
+import ua.com.fleet_wisor.minio.MinioService
+import ua.com.fleet_wisor.plugins.configureAuth
+import ua.com.fleet_wisor.plugins.configureCallPlugin
+import ua.com.fleet_wisor.plugins.configureContentNegotiation
+import ua.com.fleet_wisor.plugins.configureStatusPages
 import ua.com.fleet_wisor.routes.configureRouting
 
 fun main(args: Array<String>) {
@@ -13,9 +19,17 @@ fun main(args: Array<String>) {
 }
 
 fun Application.module() {
+    configureAuth()
     configureContentNegotiation()
-
-    configureDatabases(userRepository = UserRepositoryImpl())
     configureFrameworks()
-    configureRouting()
+    DatabaseFactory.init()
+    MinioService.init()
+    configureStatusPages()
+    configureRouting(
+        ownerRepository = OwnerRepositoryImpl(),
+        driverRepository = DriverRepositoryImpl(),
+        carRepository = CarRepositoryImpl(),
+        reportRepository = ReportsRepositoryImpl(),
+    )
+    configureCallPlugin()
 }

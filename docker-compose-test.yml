@@ -1,0 +1,42 @@
+services:
+  app:
+    image: wetcreation/fleet-wisor-server
+    volumes:
+      - .:/home/gradle/app:cached
+    working_dir: /home/gradle/app
+    env_file:
+      - .dev.env
+    ports:
+      - "8080:8080"
+    networks:
+      - fleet-wisor-network
+    depends_on:
+      - mysql
+      - minio
+
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    command: server /data --console-address ":9001"
+    networks:
+      - fleet-wisor-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
+      timeout: 20s
+      retries: 5
+    volumes:
+      - ./minio/data:/data
+      - ./minio/config:/root/.minio
+
+networks:
+  fleet-wisor-network:
+    driver: bridge
+
+volumes:
+  db_data:
