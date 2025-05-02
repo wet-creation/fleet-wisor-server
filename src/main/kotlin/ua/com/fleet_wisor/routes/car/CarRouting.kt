@@ -110,10 +110,61 @@ fun Route.configureCarRouting(
                 get("/{id}") {
                     val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
                     val carFillUp = carRepository.findFillUpById(id) ?: throw NotFoundException()
-
                     call.respond(HttpStatusCode.OK, carFillUp.asCarFillUpDto())
                 }
+                delete("/{id}") {
+                    val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
+                    val fillUp = carRepository.findFillUpById(id) ?: throw NotFoundException()
+                    if (fillUp.checkUrl != "")
+                        MinioService.remove(fillUp.checkUrl)
+                    if (carRepository.deleteFillUp(id))
+                        call.respond(HttpStatusCode.OK)
+                    else
+                        call.respond(HttpStatusCode.ServiceUnavailable)
+                }
+                put("/{id}") {
+                    val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
 
+                    val fillUp = carRepository.findFillUpById(id) ?: throw NotFoundException()
+                    val multiPart = call.receiveMultipart()
+                    var photoName = ""
+                    multiPart.forEachPart { part ->
+                        when (part.name) {
+                            "photo" -> {
+                                part as PartData.FileItem
+                                if (fillUp.checkUrl != "")
+                                    MinioService.remove(fillUp.checkUrl)
+
+                                val contentType = part.contentType?.toString() ?: "application/octet-stream"
+                                photoName = MinioService.uploadPhotoToMinio(
+                                    inputStream = part.provider().readBuffer().inputStream(),
+                                    contentType = contentType,
+                                )
+                            }
+
+
+                            "body" -> {
+                                part as PartData.FormItem
+                                val jsonBody = part.value
+                                val fillUpUpdate = Json.decodeFromString<CarFillUpUpdate>(jsonBody)
+
+                                carRepository.updateFillUp(
+                                    fillUpUpdate.copy(
+                                        checkUrl = if (photoName == "") fillUp.checkUrl else photoName
+                                    )
+                                )
+                            }
+
+                            else -> {
+                                call.respond(HttpStatusCode.BadRequest)
+                            }
+                        }
+                        part.dispose()
+                    }
+                    call.respond(
+                        HttpStatusCode.OK,
+                    )
+                }
                 post {
                     val multiPart = call.receiveMultipart()
                     var photo = ""

@@ -3,6 +3,7 @@ package ua.com.fleet_wisor.models.car
 import ua.com.fleet_wisor.routes.driver.dtos.DriverWithCarCreate
 import ua.com.fleet_wisor.routes.car.dto.CarCreate
 import ua.com.fleet_wisor.routes.car.dto.CarFillUpCreate
+import ua.com.fleet_wisor.routes.car.dto.CarFillUpUpdate
 import ua.com.fleet_wisor.routes.car.dto.CarUpdate
 import ua.com.fleet_wisor.routes.car.dto.InsuranceCreate
 import ua.com.fleet_wisor.routes.car.dto.InsuranceDto
@@ -13,6 +14,8 @@ interface CarRepository {
     suspend fun all(ownerId: Int): List<Car>
     suspend fun findById(id: Int): Car?
     suspend fun update(car: CarUpdate): Car?
+    suspend fun updateFillUp(car: CarFillUpUpdate)
+    suspend fun deleteFillUp(id: Int): Boolean
     suspend fun delete(id: Int): Boolean
     suspend fun create(ownerId: Int, car: CarCreate, insurance: InsuranceCreate? = null)
 
