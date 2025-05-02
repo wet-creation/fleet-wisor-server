@@ -19,6 +19,7 @@ interface CarRepository {
     suspend fun fillUpCar(carFillUpCreate: CarFillUpCreate)
 
     suspend fun allFillUps(): List<CarFillUp>
+    suspend fun findFillUpById(id: Int): CarFillUp?
 
     suspend fun findInsuranceById(id: Int): Insurance?
 
@@ -31,5 +32,5 @@ interface CarRepository {
     suspend fun allMaintenance(): List<Maintenance>
     suspend fun allCarBody(): List<CarBody>
     suspend fun allFuelType(): List<FuelType>
-   suspend fun updateInsurance(insuranceUpdate: InsuranceDto): Insurance?
+    suspend fun updateInsurance(insuranceUpdate: InsuranceDto): Insurance?
 }

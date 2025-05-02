@@ -215,6 +215,7 @@ class CarRepositoryImpl : CarRepository {
                 set(CarFillUpTable.time, LocalDateTime.parse(carFillUpCreate.time))
                 set(CarFillUpTable.checkUrl, carFillUpCreate.checkUrl)
                 set(CarFillUpTable.price, carFillUpCreate.price)
+                set(CarFillUpTable.amount, carFillUpCreate.amount)
                 set(CarFillUpTable.unitId, carFillUpCreate.unitId)
             }
         }
@@ -237,6 +238,26 @@ class CarRepositoryImpl : CarRepository {
                 ).select().mapCollection(CarFillUpTable.id, ::mergeFillUp) {
                     it.toFillUp()
                 }
+        }
+    }
+
+    override suspend fun findFillUpById(id: Int): CarFillUp? {
+        return useConnection { database ->
+            database.from(CarFillUpTable)
+                .innerJoin(CarTable, CarFillUpTable.carId eq CarTable.id)
+                .innerJoin(CarBodyTable, CarTable.carBodyId eq CarBodyTable.id)
+                .innerJoin(
+                    CarFuelTypesTable, CarFuelTypesTable.carId eq CarTable.id
+                )
+                .innerJoin(
+                    FuelTypeTable, FuelTypeTable.id eq CarFuelTypesTable.fuelTypeId
+                ).innerJoin(
+                    FuelUnitsTable, CarFillUpTable.unitId eq FuelUnitsTable.id
+                ).innerJoin(
+                    OwnerTable, OwnerTable.id eq CarTable.ownerId
+                ).select().where { CarFillUpTable.id eq id }.mapCollection(CarFillUpTable.id, ::mergeFillUp) {
+                    it.toFillUp()
+                }.firstOrNull()
         }
     }
 

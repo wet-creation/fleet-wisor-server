@@ -103,12 +103,45 @@ fun Route.configureCarRouting(
                 get {
                     val carFillUp = carRepository.allFillUps()
 
-                    call.respond(HttpStatusCode.OK, carFillUp.map { it.asCarFillUpDto() })
+                    call.respond(HttpStatusCode.OK, carFillUp.map {
+                        it.asCarFillUpDto()
+                    })
+                }
+                get("/{id}") {
+                    val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
+                    val carFillUp = carRepository.findFillUpById(id) ?: throw NotFoundException()
+
+                    call.respond(HttpStatusCode.OK, carFillUp.asCarFillUpDto())
                 }
 
                 post {
-                    val carFillUp = call.receive<CarFillUpCreate>()//todo photo
-                    carRepository.fillUpCar(carFillUp)
+                    val multiPart = call.receiveMultipart()
+                    var photo = ""
+                    multiPart.forEachPart { part ->
+                        when (part.name) {
+                            "photo" -> {
+                                part as PartData.FileItem
+                                val contentType = part.contentType?.toString() ?: "application/octet-stream"
+                                photo = MinioService.uploadPhotoToMinio(
+                                    inputStream = part.provider().readBuffer().inputStream(),
+                                    contentType = contentType,
+                                )
+
+                            }
+
+                            "body" -> {
+                                part as PartData.FormItem
+                                val jsonBody = part.value
+                                val carFillUp = Json.decodeFromString<CarFillUpCreate>(jsonBody)
+                                carRepository.fillUpCar(carFillUp.copy(checkUrl = photo))
+                            }
+
+                            else -> {
+                                call.respond(HttpStatusCode.BadRequest)
+                            }
+                        }
+                        part.dispose()
+                    }
                     call.respond(HttpStatusCode.Created)
                 }
 

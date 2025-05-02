@@ -26,6 +26,7 @@ fun QueryRowSet.toFillUp(): CarFillUp {
         amount = t[CarFillUpTable.amount]!!,
         car = toCar(),
         fuelUnits = toFuelUnits(),
+        fuelType = toFuelType(),
         checkUrl = t[CarFillUpTable.checkUrl]!!,
     )
 }
