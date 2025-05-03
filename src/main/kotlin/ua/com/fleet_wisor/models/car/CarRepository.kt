@@ -8,6 +8,7 @@ import ua.com.fleet_wisor.routes.car.dto.CarUpdate
 import ua.com.fleet_wisor.routes.car.dto.InsuranceCreate
 import ua.com.fleet_wisor.routes.car.dto.InsuranceDto
 import ua.com.fleet_wisor.routes.car.dto.MaintenanceCreate
+import ua.com.fleet_wisor.routes.car.dto.MaintenanceUpdate
 
 interface CarRepository {
 
@@ -33,6 +34,9 @@ interface CarRepository {
     suspend fun getByCarInsurances(carId: Int): Insurance?
     suspend fun addMaintenance(maintenance: MaintenanceCreate)
     suspend fun allMaintenance(): List<Maintenance>
+    suspend fun findMaintenanceById(id: Int): Maintenance?
+    suspend fun deleteMaintenance(id: Int): Boolean
+    suspend fun updateMaintenance(maintenance: MaintenanceUpdate)
     suspend fun allCarBody(): List<CarBody>
     suspend fun allFuelType(): List<FuelType>
     suspend fun updateInsurance(insuranceUpdate: InsuranceDto): Insurance?

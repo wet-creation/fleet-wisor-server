@@ -19,6 +19,7 @@ import ua.com.fleet_wisor.routes.car.dto.CarUpdate
 import ua.com.fleet_wisor.routes.car.dto.InsuranceCreate
 import ua.com.fleet_wisor.routes.car.dto.InsuranceDto
 import ua.com.fleet_wisor.routes.car.dto.MaintenanceCreate
+import ua.com.fleet_wisor.routes.car.dto.MaintenanceUpdate
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -355,6 +356,42 @@ class CarRepositoryImpl : CarRepository {
                     OwnerTable, OwnerTable.id eq CarTable.ownerId
                 ).select().mapCollection(MaintenanceTable.id, ::mergeMaintenance) { it.toMaintenance() }
 
+        }
+    }
+
+    override suspend fun findMaintenanceById(id: Int): Maintenance? {
+        return useConnection { database ->
+            database.from(MaintenanceTable)
+                .innerJoin(CarTable, MaintenanceTable.carId eq CarTable.id)
+                .innerJoin(CarBodyTable, CarTable.carBodyId eq CarBodyTable.id)
+                .innerJoin(
+                    CarFuelTypesTable, CarFuelTypesTable.carId eq CarTable.id
+                )
+                .innerJoin(
+                    FuelTypeTable, FuelTypeTable.id eq CarFuelTypesTable.fuelTypeId
+                ).innerJoin(
+                    OwnerTable, OwnerTable.id eq CarTable.ownerId
+                ).select().where { MaintenanceTable.id eq id }
+                .mapCollection(MaintenanceTable.id, ::mergeMaintenance) { it.toMaintenance() }.firstOrNull()
+
+        }
+    }
+
+    override suspend fun deleteMaintenance(id: Int): Boolean {
+        return transactionalQuery { database ->
+            database.delete(MaintenanceTable) { it.id eq id } == 1
+        }
+    }
+
+    override suspend fun updateMaintenance(maintenance: MaintenanceUpdate) {
+        transactionalQuery { database ->
+            database.update(MaintenanceTable) {
+                set(it.price, maintenance.price)
+                set(it.check, maintenance.checkUrl)
+                set(it.description, maintenance.description)
+                set(it.time, LocalDateTime.parse(maintenance.time))
+                where { it.id eq maintenance.id }
+            }
         }
     }
 

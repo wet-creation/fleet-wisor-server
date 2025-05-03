@@ -202,10 +202,88 @@ fun Route.configureCarRouting(
                     val maintenance = carRepository.allMaintenance().map { it.asMaintenanceDto() }
                     call.respond(HttpStatusCode.OK, maintenance)
                 }
+                get("/{id}") {
+                    val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
+                    val maintenance = carRepository.findMaintenanceById(id) ?: throw NotFoundException()
+                    call.respond(HttpStatusCode.OK, maintenance.asMaintenanceDto())
+                }
+                delete("/{id}") {
+                    val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
+                    val res = carRepository.deleteMaintenance(id)
+                    if (res) call.respond(HttpStatusCode.OK) else call.respond(HttpStatusCode.ServiceUnavailable)
+                }
+                put("/{id}") {
+                    val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
+
+                    val fillUp = carRepository.findFillUpById(id) ?: throw NotFoundException()
+                    val multiPart = call.receiveMultipart()
+                    var photoName = ""
+                    multiPart.forEachPart { part ->
+                        when (part.name) {
+                            "photo" -> {
+                                part as PartData.FileItem
+                                if (fillUp.checkUrl != "")
+                                    MinioService.remove(fillUp.checkUrl)
+
+                                val contentType = part.contentType?.toString() ?: "application/octet-stream"
+                                photoName = MinioService.uploadPhotoToMinio(
+                                    inputStream = part.provider().readBuffer().inputStream(),
+                                    contentType = contentType,
+                                )
+                            }
+
+
+                            "body" -> {
+                                part as PartData.FormItem
+                                val jsonBody = part.value
+                                val fillUpUpdate = Json.decodeFromString<MaintenanceUpdate>(jsonBody)
+
+                                carRepository.updateMaintenance(
+                                    fillUpUpdate.copy(
+                                        checkUrl = if (photoName == "") fillUp.checkUrl else photoName
+                                    )
+                                )
+                            }
+
+                            else -> {
+                                call.respond(HttpStatusCode.BadRequest)
+                            }
+                        }
+                        part.dispose()
+                    }
+                    call.respond(
+                        HttpStatusCode.OK,
+                    )
+                }
 
                 post {
-                    val maintenance = call.receive<MaintenanceCreate>()//todo photo
-                    carRepository.addMaintenance(maintenance)
+                    val multiPart = call.receiveMultipart()
+                    var photo = ""
+                    multiPart.forEachPart { part ->
+                        when (part.name) {
+                            "photo" -> {
+                                part as PartData.FileItem
+                                val contentType = part.contentType?.toString() ?: "application/octet-stream"
+                                photo = MinioService.uploadPhotoToMinio(
+                                    inputStream = part.provider().readBuffer().inputStream(),
+                                    contentType = contentType,
+                                )
+
+                            }
+
+                            "body" -> {
+                                part as PartData.FormItem
+                                val jsonBody = part.value
+                                val carFillUp = Json.decodeFromString<MaintenanceCreate>(jsonBody)
+                                carRepository.addMaintenance(carFillUp.copy(checkUrl = photo))
+                            }
+
+                            else -> {
+                                call.respond(HttpStatusCode.BadRequest)
+                            }
+                        }
+                        part.dispose()
+                    }
                     call.respond(HttpStatusCode.Created)
                 }
 
