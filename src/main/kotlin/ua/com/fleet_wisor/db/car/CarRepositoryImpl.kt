@@ -14,10 +14,12 @@ import ua.com.fleet_wisor.models.car.*
 import ua.com.fleet_wisor.routes.driver.dtos.DriverWithCarCreate
 import ua.com.fleet_wisor.routes.car.dto.CarCreate
 import ua.com.fleet_wisor.routes.car.dto.CarFillUpCreate
+import ua.com.fleet_wisor.routes.car.dto.CarFillUpUpdate
 import ua.com.fleet_wisor.routes.car.dto.CarUpdate
 import ua.com.fleet_wisor.routes.car.dto.InsuranceCreate
 import ua.com.fleet_wisor.routes.car.dto.InsuranceDto
 import ua.com.fleet_wisor.routes.car.dto.MaintenanceCreate
+import ua.com.fleet_wisor.routes.car.dto.MaintenanceUpdate
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -153,6 +155,24 @@ class CarRepositoryImpl : CarRepository {
         }
     }
 
+    override suspend fun updateFillUp(fillUp: CarFillUpUpdate) {
+        transactionalQuery { database ->
+            database.update(CarFillUpTable) {
+                set(it.checkUrl, fillUp.checkUrl)
+                set(it.amount, fillUp.amount)
+                set(it.price, fillUp.price)
+                set(it.time, LocalDateTime.parse(fillUp.time))
+                where { it.id eq fillUp.id }
+            }
+        }
+    }
+
+    override suspend fun deleteFillUp(id: Int): Boolean {
+        return transactionalQuery { database ->
+            database.delete(CarFillUpTable) { it.id eq id } == 1
+        }
+    }
+
     override suspend fun delete(id: Int): Boolean {
         return transactionalQuery { database ->
             database.delete(CarTable) {
@@ -215,6 +235,7 @@ class CarRepositoryImpl : CarRepository {
                 set(CarFillUpTable.time, LocalDateTime.parse(carFillUpCreate.time))
                 set(CarFillUpTable.checkUrl, carFillUpCreate.checkUrl)
                 set(CarFillUpTable.price, carFillUpCreate.price)
+                set(CarFillUpTable.amount, carFillUpCreate.amount)
                 set(CarFillUpTable.unitId, carFillUpCreate.unitId)
             }
         }
@@ -237,6 +258,26 @@ class CarRepositoryImpl : CarRepository {
                 ).select().mapCollection(CarFillUpTable.id, ::mergeFillUp) {
                     it.toFillUp()
                 }
+        }
+    }
+
+    override suspend fun findFillUpById(id: Int): CarFillUp? {
+        return useConnection { database ->
+            database.from(CarFillUpTable)
+                .innerJoin(CarTable, CarFillUpTable.carId eq CarTable.id)
+                .innerJoin(CarBodyTable, CarTable.carBodyId eq CarBodyTable.id)
+                .innerJoin(
+                    CarFuelTypesTable, CarFuelTypesTable.carId eq CarTable.id
+                )
+                .innerJoin(
+                    FuelTypeTable, FuelTypeTable.id eq CarFuelTypesTable.fuelTypeId
+                ).innerJoin(
+                    FuelUnitsTable, CarFillUpTable.unitId eq FuelUnitsTable.id
+                ).innerJoin(
+                    OwnerTable, OwnerTable.id eq CarTable.ownerId
+                ).select().where { CarFillUpTable.id eq id }.mapCollection(CarFillUpTable.id, ::mergeFillUp) {
+                    it.toFillUp()
+                }.firstOrNull()
         }
     }
 
@@ -315,6 +356,42 @@ class CarRepositoryImpl : CarRepository {
                     OwnerTable, OwnerTable.id eq CarTable.ownerId
                 ).select().mapCollection(MaintenanceTable.id, ::mergeMaintenance) { it.toMaintenance() }
 
+        }
+    }
+
+    override suspend fun findMaintenanceById(id: Int): Maintenance? {
+        return useConnection { database ->
+            database.from(MaintenanceTable)
+                .innerJoin(CarTable, MaintenanceTable.carId eq CarTable.id)
+                .innerJoin(CarBodyTable, CarTable.carBodyId eq CarBodyTable.id)
+                .innerJoin(
+                    CarFuelTypesTable, CarFuelTypesTable.carId eq CarTable.id
+                )
+                .innerJoin(
+                    FuelTypeTable, FuelTypeTable.id eq CarFuelTypesTable.fuelTypeId
+                ).innerJoin(
+                    OwnerTable, OwnerTable.id eq CarTable.ownerId
+                ).select().where { MaintenanceTable.id eq id }
+                .mapCollection(MaintenanceTable.id, ::mergeMaintenance) { it.toMaintenance() }.firstOrNull()
+
+        }
+    }
+
+    override suspend fun deleteMaintenance(id: Int): Boolean {
+        return transactionalQuery { database ->
+            database.delete(MaintenanceTable) { it.id eq id } == 1
+        }
+    }
+
+    override suspend fun updateMaintenance(maintenance: MaintenanceUpdate) {
+        transactionalQuery { database ->
+            database.update(MaintenanceTable) {
+                set(it.price, maintenance.price)
+                set(it.check, maintenance.checkUrl)
+                set(it.description, maintenance.description)
+                set(it.time, LocalDateTime.parse(maintenance.time))
+                where { it.id eq maintenance.id }
+            }
         }
     }
 

@@ -9,14 +9,25 @@ data class CarFillUpDto(
     val price: Double,
     val amount: Double,
     val checkUrl: String,
-    val unit: String,
+    val fuelType: FuelTypeDto,
+    val unit: FuelUnitsDto,
     val car: CarDto
+)
+
+@Serializable
+data class CarFillUpUpdate(
+    val id: Int,
+    val time: String,
+    val price: Double,
+    val amount: Double,
+    val checkUrl: String,
 )
 @Serializable
 data class CarFillUpCreate(
-    val price: Double,
-    val checkUrl: String,
     val time: String,
+    val price: Double,
     val unitId: Int,
-    val carId: Int
+    val carId: Int,
+    val amount: Double,
+    val checkUrl: String = ""
 )

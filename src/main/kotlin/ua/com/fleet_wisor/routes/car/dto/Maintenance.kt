@@ -17,7 +17,15 @@ data class MaintenanceDto(
 data class MaintenanceCreate(
     val time: String,
     val description: String,
-    val checkUrl: String,
+    val checkUrl: String = "",
     val carId: Int,
+    val price: Double,
+)
+@Serializable
+data class MaintenanceUpdate(
+    val id: Int,
+    val time: String,
+    val description: String,
+    val checkUrl: String = "",
     val price: Double,
 )

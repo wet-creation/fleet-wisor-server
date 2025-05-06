@@ -10,6 +10,7 @@ data class CarFillUp(
     val amount: Double,
     val checkUrl: String,
     val fuelUnits: FuelUnits,
+    val fuelType: FuelType,
     val car: Car
 ) {
     fun asCarFillUpDto() = CarFillUpDto(
@@ -18,7 +19,8 @@ data class CarFillUp(
         price = price,
         amount = amount,
         checkUrl = checkUrl,
-        unit = fuelUnits.nameUk,
+        fuelType = fuelType.asFuelTypeDto(),
+        unit = fuelUnits.asFuelUnits(),
         car = car.asCarDto()
     )
 }
