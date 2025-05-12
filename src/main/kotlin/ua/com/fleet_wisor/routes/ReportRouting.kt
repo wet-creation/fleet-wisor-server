@@ -21,15 +21,17 @@ fun Route.configureReportRouting(
             }
 
             get("/excel") {
+                val lang = call.request.pathVariables["lang"] ?: "en"
+                val start = call.queryParameters["startDate"] ?: throw IllegalArgumentException("Invalid startDate")
+                val end = call.queryParameters["endDate"] ?: throw IllegalArgumentException("Invalid endDate")
                 val res = getReports(reportsRepository)
-                val excel = reportsRepository.mainReportExcel(res)
+                val excel = reportsRepository.mainReportExcel(lang,res, start, end)
 
                 call.response.header(
                     HttpHeaders.ContentDisposition,
                     ContentDisposition.Attachment.withParameter(ContentDisposition.Parameters.FileName, "report.xlsx")
                         .toString()
                 )
-
                 call.respondBytes(
                     bytes = excel,
                     contentType = ContentType.Application.Xlsx

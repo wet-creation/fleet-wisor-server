@@ -25,12 +25,14 @@ fun Application.configureRouting(
                 call.respond(HttpStatusCode.OK, " World")
             }
         }
-        route("/api/v1") {
-            configureOwnerRouting(ownerRepository)
+        route("/api/v1/") {
+            route("/{lang}") {
+                configureOwnerRouting(ownerRepository)
+                configureCarRouting(carRepository)
+                configureReportRouting(reportRepository)
+            }
             configureDriverRouting(driverRepository)
-            configureCarRouting(carRepository)
             configureAuthRouting(ownerRepository)
-            configureReportRouting(reportRepository)
         }
 
         route("/image/{filename}") {

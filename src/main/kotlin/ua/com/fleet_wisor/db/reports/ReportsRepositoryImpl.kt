@@ -1,7 +1,7 @@
 package ua.com.fleet_wisor.db.reports
 
 import org.apache.commons.io.output.ByteArrayOutputStream
-import org.apache.poi.ss.usermodel.Row
+import org.apache.poi.ss.usermodel.*
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import ua.com.fleet_wisor.db.DatabaseFactory.database
 import ua.com.fleet_wisor.models.reports.CarPeriodReport
@@ -74,31 +74,69 @@ class ReportsRepositoryImpl : ReportsRepository {
         return list
     }
 
-    override fun mainReportExcel(reports: List<CarPeriodReport>): ByteArray {
+    override fun mainReportExcel(
+        lang: String,
+        reports: List<CarPeriodReport>,
+        startDate: String,
+        endDate: String
+    ): ByteArray {
         val workbook = XSSFWorkbook()
-        val sheet = workbook.createSheet("Report")
+        val localization = if (lang == "en") EnglishReportLocalizations else UkraineReportLocalizations
+        val sheet = workbook.createSheet(localization.fileName(startDate, endDate))
+        val headerFont = workbook.createFont().apply {
+            bold = true
+            color = IndexedColors.WHITE.index
+        }
 
-        val header: Row = sheet.createRow(0)
-        header.createCell(0).setCellValue("ID")
-        header.createCell(1).setCellValue("Колів")
-        header.createCell(2).setCellValue("Назва Бренду")
-        header.createCell(3).setCellValue("Модель")
-        header.createCell(4).setCellValue("К-сть заправок")
-        header.createCell(5).setCellValue("Вартість заправок")
-        header.createCell(6).setCellValue("К-сть обслуговувань")
-        header.createCell(7).setCellValue("Вартість обслуговувань")
+        val headerStyle = workbook.createCellStyle().apply {
+            setFont(headerFont)
+            fillForegroundColor = IndexedColors.TEAL.index
+            fillPattern = FillPatternType.SOLID_FOREGROUND
+            alignment = HorizontalAlignment.CENTER
+            verticalAlignment = VerticalAlignment.CENTER
+            borderBottom = BorderStyle.THIN
+            borderTop = BorderStyle.THIN
+            borderLeft = BorderStyle.THIN
+            borderRight = BorderStyle.THIN
+        }
+        val bodyStyle = workbook.createCellStyle().apply {
+            borderBottom = BorderStyle.THIN
+            borderTop = BorderStyle.THIN
+            borderLeft = BorderStyle.THIN
+            borderRight = BorderStyle.THIN
+        }
 
+        val header = sheet.createRow(0)
+        val headers = listOf(
+            (localization.id),
+            (localization.color),
+            (localization.brandName),
+            (localization.model),
+            (localization.fillUpCount),
+            (localization.totalFillUp),
+            (localization.maintenanceCount),
+            (localization.totalMaintenance),
+        )
+        headers.forEachIndexed { index, headerName ->
+            val cell = header.createCell(index)
+            cell.setCellValue(headerName)
+            cell.cellStyle = headerStyle
+        }
         reports.forEachIndexed { index, driver ->
             val row = sheet.createRow(index + 1)
-            row.createCell(0).setCellValue(driver.id.toDouble())
-            row.createCell(1).setCellValue(driver.color)
-            row.createCell(2).setCellValue(driver.brandName)
-            row.createCell(3).setCellValue(driver.model)
-            row.createCell(4).setCellValue(driver.fillUpCount.toDouble())
-            row.createCell(5).setCellValue(driver.totalFillUp)
-            row.createCell(6).setCellValue(driver.maintenanceCount.toDouble())
-            row.createCell(7).setCellValue(driver.totalMaintenance)
+            row.addCell(0, driver.id, bodyStyle)
+            row.addCell(1, driver.color ?: "", bodyStyle)
+            row.addCell(2, driver.brandName, bodyStyle)
+            row.addCell(3, driver.model ?: "", bodyStyle)
+            row.addCell(4, driver.fillUpCount, bodyStyle)
+            row.addCell(5, driver.totalFillUp, bodyStyle)
+            row.addCell(6, driver.maintenanceCount, bodyStyle)
+            row.addCell(7, driver.totalMaintenance, bodyStyle)
         }
+
+        (0..7).forEach { sheet.autoSizeColumn(it) }
+
+
 
         val outputStream = ByteArrayOutputStream()
         workbook.write(outputStream)
@@ -106,4 +144,61 @@ class ReportsRepositoryImpl : ReportsRepository {
 
         return outputStream.toByteArray()
     }
+}
+
+private fun Row.addCell(index: Int, value: Any, style: CellStyle) {
+    val cell = createCell(index)
+    when (value) {
+        is String -> cell.setCellValue(value)
+        is Double -> cell.setCellValue(value)
+        is Int -> cell.setCellValue(value.toDouble())
+        is Float -> cell.setCellValue(value.toDouble())
+        else -> cell.setCellValue(value.toString())
+    }
+    cell.cellStyle = style
+}
+
+interface ReportLocalizations {
+    fun fileName(from: String, to: String): String
+    val fillUpCount: String
+    val totalFillUp: String
+    val maintenanceCount: String
+    val totalMaintenance: String
+    val id: String
+    val color: String
+    val brandName: String
+    val model: String
+}
+
+object EnglishReportLocalizations : ReportLocalizations {
+    override fun fileName(from: String, to: String): String = "$from to $to"
+    override val fillUpCount: String = "Fillup count"
+    override val totalFillUp: String = "Total fillup"
+    override val maintenanceCount: String = "Maintenance count"
+    override val totalMaintenance: String = "Total maintenance"
+    override val id: String = "ID"
+    override val color: String = "Color"
+    override val brandName: String = "Brand name"
+    override val model: String = "Model"
+}
+
+object UkraineReportLocalizations : ReportLocalizations {
+    override fun fileName(from: String, to: String): String = "$from по $to"
+    override val fillUpCount: String
+        get() = "К-сть заправок"
+    override val totalFillUp: String
+        get() = "Вартість заправок"
+    override val maintenanceCount: String
+        get() = "К-сть обслуговувань"
+    override val totalMaintenance: String
+        get() = "Вартість обслуговувань"
+    override val id: String
+        get() = "ID"
+    override val color: String
+        get() = "Колір"
+    override val brandName: String
+        get() = "Назва Бренду"
+    override val model: String
+        get() = "Модель"
+
 }

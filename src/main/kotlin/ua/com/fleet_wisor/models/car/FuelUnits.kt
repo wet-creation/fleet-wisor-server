@@ -8,10 +8,11 @@ data class FuelUnits(
     val nameEn: String,
     val fuelType: FuelType = FuelType(),
 ) {
-    fun asFuelUnits(): FuelUnitsDto {
+    fun asFuelUnits(lang: String): FuelUnitsDto {
+        val isEn = lang.equals("en", ignoreCase = true)
         return FuelUnitsDto(
             id = id,
-            name = nameUk,
+            name = if (isEn) nameEn else nameUk,
         )
     }
 }

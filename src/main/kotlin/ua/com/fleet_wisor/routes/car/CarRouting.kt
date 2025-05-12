@@ -60,57 +60,66 @@ fun Route.configureCarRouting(
             }
 
             get("/fuel-type") {
-                val list = carRepository.allFuelType().map { it.asFuelTypeDto() }
+                val lang = call.request.pathVariables["lang"] ?: "en"
+                val list = carRepository.allFuelType().map { it.asFuelTypeDto(lang) }
                 call.respond(HttpStatusCode.OK, list.sortedBy { it.id })
             }
             get("/car-body") {
-                val list = carRepository.allCarBody().map { it.asCarBodyDto() }
+                val lang = call.request.pathVariables["lang"] ?: "en"
+                val list = carRepository.allCarBody().map { it.asCarBodyDto(lang) }
                 call.respond(HttpStatusCode.OK, list.sortedBy { it.id })
             }
 
 
 
             get("/{id}") {
+                val lang = call.request.pathVariables["lang"] ?: "en"
                 val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
                 val car = carRepository.findById(id)
                 if (car != null) {
-                    call.respond(HttpStatusCode.OK, car.asCarDto())
+                    call.respond(HttpStatusCode.OK, car.asCarDto(lang))
                 } else {
                     throw NotFoundException(notFoundMessage(Car::class, id, "Check your id"))
                 }
             }
             get {
+                val lang = call.request.pathVariables["lang"] ?: "en"
+
                 val ownerId =
                     call.principal<UserIdPrincipal>()?.name?.toIntOrNull() ?: throw IllegalArgumentException("Invalid")
 
-                val cars = carRepository.all(ownerId).map { it.asCarDto() }
+                val cars = carRepository.all(ownerId).map { it.asCarDto(lang) }
                 call.respond(HttpStatusCode.OK, cars)
             }
 
             put {
+                val lang = call.request.pathVariables["lang"] ?: "en"
                 val car = call.receive<CarUpdate>()
                 val res = carRepository.update(car) ?: throw NotFoundException(
                     notFoundMessage(Car::class, car.id, "Check your id")
                 )
                 call.respond(
                     HttpStatusCode.OK,
-                    res.asCarDto()
+                    res.asCarDto(lang)
                 )
 
 
             }
             route("/fill-up") {
                 get {
+                    val lang = call.request.pathVariables["lang"] ?: "en"
+
                     val carFillUp = carRepository.allFillUps()
 
                     call.respond(HttpStatusCode.OK, carFillUp.map {
-                        it.asCarFillUpDto()
+                        it.asCarFillUpDto(lang)
                     })
                 }
                 get("/{id}") {
+                    val lang = call.request.pathVariables["lang"] ?: "en"
                     val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
                     val carFillUp = carRepository.findFillUpById(id) ?: throw NotFoundException()
-                    call.respond(HttpStatusCode.OK, carFillUp.asCarFillUpDto())
+                    call.respond(HttpStatusCode.OK, carFillUp.asCarFillUpDto(lang))
                 }
                 delete("/{id}") {
                     val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
@@ -199,13 +208,15 @@ fun Route.configureCarRouting(
             }
             route("/maintenance") {
                 get {
-                    val maintenance = carRepository.allMaintenance().map { it.asMaintenanceDto() }
+                    val lang = call.request.pathVariables["lang"] ?: "en"
+                    val maintenance = carRepository.allMaintenance().map { it.asMaintenanceDto(lang) }
                     call.respond(HttpStatusCode.OK, maintenance)
                 }
                 get("/{id}") {
+                    val lang = call.request.pathVariables["lang"] ?: "en"
                     val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
                     val maintenance = carRepository.findMaintenanceById(id) ?: throw NotFoundException()
-                    call.respond(HttpStatusCode.OK, maintenance.asMaintenanceDto())
+                    call.respond(HttpStatusCode.OK, maintenance.asMaintenanceDto(lang))
                 }
                 delete("/{id}") {
                     val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
