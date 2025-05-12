@@ -13,15 +13,15 @@ data class CarFillUp(
     val fuelType: FuelType,
     val car: Car
 ) {
-    fun asCarFillUpDto() = CarFillUpDto(
+    fun asCarFillUpDto(lang: String) = CarFillUpDto(
         id = id,
         time = time,
         price = price,
         amount = amount,
         checkUrl = checkUrl,
-        fuelType = fuelType.asFuelTypeDto(),
-        unit = fuelUnits.asFuelUnits(),
-        car = car.asCarDto()
+        fuelType = fuelType.asFuelTypeDto(lang),
+        unit = fuelUnits.asFuelUnits(lang),
+        car = car.asCarDto(lang)
     )
 }
 

@@ -42,11 +42,12 @@ fun Route.configureOwnerRouting(
                 }
 
                 get("/settings") {
+                    val lang = call.request.pathVariables["lang"] ?: "en"
                     val id = call.principal<UserIdPrincipal>()?.name?.toIntOrNull()
                         ?: throw IllegalArgumentException("Invalid")
                     val settings =
                         ownerRepository.getOwnerSettings(id) ?: throw NotFoundException("Settings not found for $id")
-                    call.respond(HttpStatusCode.OK, settings.asUserSettingsDto())
+                    call.respond(HttpStatusCode.OK, settings.asUserSettingsDto(lang))
                 }
             }
             get {

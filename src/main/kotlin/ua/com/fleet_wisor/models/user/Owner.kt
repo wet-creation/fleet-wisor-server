@@ -23,9 +23,9 @@ data class Owner(
 data class OwnerSettings(
     val fuelUnits: List<FuelUnits>,
 ) {
-    fun asUserSettingsDto(): OwnerSettingsDto {
+    fun asUserSettingsDto(lang: String): OwnerSettingsDto {
         return OwnerSettingsDto(
-            fuelUnits = fuelUnits.map { it.asFuelUnits() }
+            fuelUnits = fuelUnits.map { it.asFuelUnits(lang) }
 
         )
     }

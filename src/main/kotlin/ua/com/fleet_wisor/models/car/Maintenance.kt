@@ -11,13 +11,13 @@ data class Maintenance(
     val car: Car,
     val price: Double,
 ) {
-    fun asMaintenanceDto(): MaintenanceDto {
+    fun asMaintenanceDto(lang: String): MaintenanceDto {
         return MaintenanceDto(
             id = id,
             time = time,
             description = description,
             checkUrl = checkUrl,
-            car = car.asCarDto(),
+            car = car.asCarDto(lang),
             price = price
         )
     }

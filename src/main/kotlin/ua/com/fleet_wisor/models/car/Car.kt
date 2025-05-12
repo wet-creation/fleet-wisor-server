@@ -8,8 +8,11 @@ import ua.com.fleet_wisor.routes.car.dto.FuelTypeDto
 import ua.com.fleet_wisor.routes.car.dto.SimpleFuelTypeDto
 
 data class CarBody(val id: Int = -1, val nameUk: String = "", val nameEn: String = "") {
-    fun asCarBodyDto(): CarBodyDto {
-        return CarBodyDto(id = id, name = nameUk)
+    fun asCarBodyDto(lang: String): CarBodyDto {
+        val isEn = lang.contains("en", ignoreCase = true)
+        return CarBodyDto(
+            id = id, name = if (isEn) nameEn else nameUk,
+        )
     }
 }
 
@@ -19,10 +22,15 @@ data class FuelType(
     val nameEn: String = "",
     val fuelUnits: List<FuelUnits> = emptyList()
 ) {
-    fun asSimpleFuelTypeDto(): SimpleFuelTypeDto {
-        return SimpleFuelTypeDto(id, nameUk)
+    fun asSimpleFuelTypeDto(lang: String): SimpleFuelTypeDto {
+        val isEn = lang.contains("en", ignoreCase = true)
+        return SimpleFuelTypeDto(id, if (isEn) nameEn else nameUk)
     }
-    fun asFuelTypeDto(): FuelTypeDto = FuelTypeDto(id, nameUk, units = fuelUnits.map { it.asFuelUnits() })
+
+    fun asFuelTypeDto(lang: String): FuelTypeDto {
+        val isEn = lang.contains("en", ignoreCase = true)
+        return FuelTypeDto(id, if (isEn) nameEn else nameUk, units = fuelUnits.map { it.asFuelUnits(lang) })
+    }
 }
 
 
@@ -39,7 +47,7 @@ data class Car(
     val fuelTypes: Set<FuelType> = setOf(),
     val carBody: CarBody = CarBody(),
 ) {
-    fun asCarDto() = CarDto(
+    fun asCarDto(lang: String) = CarDto(
         id = id,
         brandName = brandName,
         color = color,
@@ -49,8 +57,8 @@ data class Car(
         mileAge = mileAge,
         owner = owner,
         drivers = drivers.toList(),
-        fuelTypes = fuelTypes.map { it.asSimpleFuelTypeDto() },
-        carBody = carBody.asCarBodyDto()
+        fuelTypes = fuelTypes.map { it.asSimpleFuelTypeDto(lang) },
+        carBody = carBody.asCarBodyDto(lang)
     )
 }
 
