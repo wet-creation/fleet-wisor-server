@@ -69,6 +69,16 @@ fun Route.configureCarRouting(
                 val list = carRepository.allCarBody().map { it.asCarBodyDto(lang) }
                 call.respond(HttpStatusCode.OK, list.sortedBy { it.id })
             }
+            delete("/{id}") {
+                val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
+                val insurance = carRepository.getByCarInsurances(id)
+                if (!insurance?.photoUrl.isNullOrEmpty())
+                    MinioService.remove(insurance.photoUrl)
+
+                if (carRepository.delete(id))
+                    call.respond(HttpStatusCode.OK)
+                else throw NotFoundException(notFoundMessage(Car::class, id, "Check your id"))
+            }
 
 
 
@@ -371,16 +381,6 @@ fun Route.configureCarRouting(
                 }
             }
 
-            delete("/{id}") {
-                val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
-                val insurance = carRepository.getByCarInsurances(id) ?: throw NotFoundException()
-                if (insurance.photoUrl != "")
-                    MinioService.remove(insurance.photoUrl)
-
-                if (carRepository.delete(id))
-                    call.respond(HttpStatusCode.OK)
-                else throw NotFoundException(notFoundMessage(Car::class, id, "Check your id"))
-            }
         }
     }
 }

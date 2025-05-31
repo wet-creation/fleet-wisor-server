@@ -272,7 +272,7 @@ class CarRepositoryImpl : CarRepository {
                 .innerJoin(
                     FuelTypeTable, FuelTypeTable.id eq CarFuelTypesTable.fuelTypeId
                 ).innerJoin(
-                    FuelUnitsTable, CarFillUpTable.unitId eq FuelUnitsTable.id
+                    FuelUnitsTable, CarFillUpTable.unitId eq FuelUnitsTable.id and(FuelTypeTable.id eq FuelUnitsTable.fuelTypeId)
                 ).innerJoin(
                     OwnerTable, OwnerTable.id eq CarTable.ownerId
                 ).select().where { CarFillUpTable.id eq id }.mapCollection(CarFillUpTable.id, ::mergeFillUp) {

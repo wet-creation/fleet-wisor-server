@@ -31,6 +31,11 @@ repositories {
     mavenCentral()
 }
 
+tasks.withType<Jar> {
+    manifest {
+        attributes["Main-Class"] = "io.ktor.server.netty.EngineMain"
+    }
+}
 dependencies {
     testImplementation("io.ktor:ktor-server-host-common")
     implementation("io.ktor:ktor-server-auth-jvm")
